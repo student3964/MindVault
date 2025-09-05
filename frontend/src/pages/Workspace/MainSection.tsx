@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { marked } from 'marked'; // Ensure you have run: npm install marked @types/marked
+import { marked } from 'marked';
 
 // --- ActionCard component (for the Dashboard) ---
-const ActionCard = ({ title, description, icon, isFeatured = false, buttonText, onButtonClick }: { title: string; description: string; icon: string; isFeatured?: boolean; buttonText?: string; onButtonClick?: () => void; }) => {
-  const borderStyle = isFeatured ? "border-purple-500 border-dashed" : "border-gray-700";
+// FIX: The border style is now always dashed and purple, the isFeatured prop is no longer needed.
+const ActionCard = ({ title, description, icon, buttonText, onButtonClick }: { title: string; description: string; icon: string; buttonText?: string; onButtonClick?: () => void; }) => {
+  const borderStyle = "border-purple-500 border-dashed"; // Applied to all cards now
+  
   return (
     <div className={`group relative p-6 rounded-2xl bg-[#18181b] border hover:border-purple-500 transition-all duration-300 flex flex-col ${borderStyle}`}>
       <div className="flex-grow">
@@ -35,7 +37,8 @@ const DashboardView: React.FC<{ setCurrentView: (view: string) => void }> = ({ s
           <div>
             <h2 className="text-2xl font-semibold text-white mb-5">Create</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ActionCard title="Upload & Unlock Insights" description="Upload your notes in PDF, PPT, or image formats and instantly get concise summaries and visual mind maps powered by AI — no more endless scrolling through pages." icon="✨" isFeatured={true} buttonText="Upload Notes" onButtonClick={handleUploadNotesClick} />
+              {/* The isFeatured prop is no longer necessary */}
+              <ActionCard title="Upload & Unlock Insights" description="Upload your notes in PDF, PPT, or image formats and instantly get concise summaries and visual mind maps powered by AI — no more endless scrolling through pages." icon="✨" buttonText="Upload Notes" onButtonClick={handleUploadNotesClick} />
               <ActionCard title="Quiz yourself on any supported documents" description="Turn your study material into personalized quizzes and flashcards in seconds. Practice smarter with auto-generated questions that reinforce key concepts." icon="🧠" buttonText="Generate Quizzes" onButtonClick={handleActionRequiringFile} />
               <ActionCard title="Chat & Ask Questions with AI" description="Stuck on a topic? Ask your doubts directly to our intelligent chatbot trained on your uploaded content and get clear, contextual answers instantly." icon="🤖" buttonText="Ask Anything, Anytime" onButtonClick={handleActionRequiringFile} />
               <ActionCard title="Organize, Save & Access Anywhere" description="Save your processed notes, summaries, and quizzes in one place. Organize everything neatly and access your personal knowledge vault whenever you need it." icon="📱" buttonText="Save Notes" onButtonClick={handleActionRequiringFile} />
