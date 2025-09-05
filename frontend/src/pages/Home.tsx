@@ -1,22 +1,13 @@
 import React from 'react';
 import { scroller } from 'react-scroll';
-import Navbar from '../components/Navbar'; 
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import './Home.css';
+import './Home.css'; // <-- Importing the separate CSS file
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleGetStartedClick = () => {
-    navigate('/signup');
-  };
-
   const handleLoginClick = () => {
     navigate('/login');
-  };
-
-  const handleUploadNotesClick = () => {
-    navigate('/upload-notes');
   };
 
   const handleScrollTo = (section: string) => {
@@ -87,7 +78,6 @@ const Home: React.FC = () => {
             >
               Workspace
             </a>
-
             <RouterLink
               to="/about"
               className="nav-link cursor-pointer transition-colors capitalize"
@@ -96,13 +86,9 @@ const Home: React.FC = () => {
             </RouterLink>
           </div>
 
-          {/* Right: Buttons */}
-          <div className="flex space-x-4">
+          <div className="flex">
             <button className="glow-btn" onClick={handleLoginClick}>
               Login
-            </button>
-            <button className="primary-btn" onClick={handleGetStartedClick}>
-              Get Started
             </button>
           </div>
         </div>
@@ -111,9 +97,9 @@ const Home: React.FC = () => {
       {/* HERO SECTION */}
       <section
         id="home"
-        className="pt-24 pb-16 flex flex-col justify-center items-center text-center px-6 min-h-screen hero-section-container"
+        className="pt-24 pb-16 flex flex-col justify-center items-center text-center px-6 min-h-screen"
       >
-        <div className="fade-in-section main-content">
+        <div className="fade-in-section">
           <h1 className="text-5xl md:text-6xl font-bold mb-4">Welcome to MindVault</h1>
           <h1 className="main-heading pop-up-text">Don't just store notes — unlock them.</h1>
           <h2 className="sub-heading-1 pop-up-text" style={{ animationDelay: '0.5s' }}>
@@ -123,7 +109,7 @@ const Home: React.FC = () => {
             Upload. Understand. Excel.
           </h3>
           <div className="flex gap-4 justify-center mt-8">
-            <button className="primary-btn" onClick={handleGetStartedClick}>
+            <button className="primary-btn" onClick={() => navigate('/signup')}>
               Get Started
             </button>
             <button className="glow-btn" onClick={() => handleScrollTo('explore')}>
@@ -133,43 +119,49 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* EXPLORE SECTION centered */}
+      {/* EXPLORE SECTION */}
       <section
         id="explore"
         className="explore-container fade-in-section flex flex-col items-center justify-center min-h-screen"
       >
         <h2 className="funky-font-title mb-8 text-4xl md:text-5xl text-center">Explore MindVault</h2>
         <div className="explore-cards-row flex flex-wrap justify-center items-center gap-8 w-full max-w-6xl">
+
           <FeatureCard
-            icon="📑"
-            title="Upload & Unlock Insights"
-            description="Upload your notes in PDF, PPT, or image formats and instantly get concise summaries and visual mind maps powered by AI — no more endless scrolling through pages."
-            buttonText="Upload Notes"
-            onClick={handleUploadNotesClick}
+            icon="✨"
+            title="Summarize Instantly"
+            description="Quickly condense PDFs, PPTs, or handwritten notes into clear and concise overviews. Let AI do the heavy lifting while you focus on learning."
+            buttonText="Summarize Notes"
+            onClick={handleLoginClick}
           />
+
           <FeatureCard
             icon="🧠"
-            title="Quiz yourself on any supported documents"
-            description="Turn your study material into personalized quizzes and flashcards in seconds. Practice smarter with auto-generated questions that reinforce key concepts."
-            buttonText="Generate Quizzes"
+            title="Generate MCQs"
+            description="Practice smarter by turning your study material into auto-generated MCQs. Reinforce key concepts and track your preparation effectively."
+            buttonText="Generate MCQs"
             onClick={handleLoginClick}
           />
+
           <FeatureCard
-            icon="🤖"
-            title="Chat & Ask Questions with AI"
-            description="Stuck on a topic? Ask your doubts directly to our intelligent chatbot trained on your uploaded content and get clear, contextual answers instantly."
-            buttonText="Ask Anything, Anytime"
+            icon="🗺️"
+            title="Mind Map"
+            description="Transform static notes into dynamic visual maps. Discover relationships between ideas and build a stronger understanding of complex topics."
+            buttonText="Create Mind Map"
             onClick={handleLoginClick}
           />
+
           <FeatureCard
             icon="📱"
-            title="Organize, Save & Access Anywhere"
-            description="Save your processed notes, summaries, and quizzes in one place. Organize everything neatly and access your personal knowledge vault whenever you need it."
+            title="Save Notes"
+            description="Keep all your processed content—summaries, quizzes, and maps—organized in one secure place. Access them anytime with ease."
             buttonText="Save Notes"
             onClick={handleLoginClick}
           />
+
         </div>
       </section>
+
 
       {/* FOOTER */}
       <footer className="bg-[#0d0d0d] text-gray-400 py-6 text-center border-t border-gray-800 mt-20">

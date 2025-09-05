@@ -3,47 +3,74 @@ import { useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
 
 // --- ActionCard component (for the Dashboard) ---
-// FIX: The border style is now always dashed and purple, the isFeatured prop is no longer needed.
+// FIX: The border style is now always dashed and purple. The isFeatured prop has been removed.
 const ActionCard = ({ title, description, icon, buttonText, onButtonClick }: { title: string; description: string; icon: string; buttonText?: string; onButtonClick?: () => void; }) => {
-  const borderStyle = "border-purple-500 border-dashed"; // Applied to all cards now
-  
-  return (
-    <div className={`group relative p-6 rounded-2xl bg-[#18181b] border hover:border-purple-500 transition-all duration-300 flex flex-col ${borderStyle}`}>
-      <div className="flex-grow">
-        <div className="flex items-start space-x-5">
-          <div className="text-3xl mt-1">{icon}</div>
-          <div>
-            <h3 className="font-bold text-lg text-white mb-1">{title}</h3>
-            <p className="text-slate-400 text-sm">{description}</p>
-          </div>
+    const borderStyle = "border-purple-500 border-dashed"; // Applied to all cards now
+
+    return (
+        <div className={`group relative p-6 rounded-2xl bg-[#18181b] border hover:border-purple-500 transition-all duration-300 flex flex-col ${borderStyle}`}>
+            <div className="flex-grow">
+                <div className="flex items-start space-x-5">
+                    <div className="text-3xl mt-1">{icon}</div>
+                    <div>
+                        <h3 className="font-bold text-lg text-white mb-1">{title}</h3>
+                        <p className="text-slate-400 text-sm">{description}</p>
+                    </div>
+                </div>
+            </div>
+            {buttonText && onButtonClick && (<button onClick={onButtonClick} className="primary-btn w-full mt-6 py-2">{buttonText}</button>)}
         </div>
-      </div>
-      {buttonText && onButtonClick && (<button onClick={onButtonClick} className="primary-btn w-full mt-6 py-2">{buttonText}</button>)}
-    </div>
-  );
+    );
 };
 
 // --- Different Views ---
 
 const DashboardView: React.FC<{ setCurrentView: (view: string) => void }> = ({ setCurrentView }) => {
     const navigate = useNavigate();
-    const handleUploadNotesClick = () => navigate('/upload-notes');
+    const handleNavigateToUpload = () => navigate('/upload-notes');
     const handleActionRequiringFile = () => setCurrentView('myVault');
 
     return (
         <div className="p-8 lg:p-12">
-          <h1 className="text-4xl font-bold mb-2 text-white">Welcome, Vaidehi!</h1>
-          <p className="text-gray-400 mb-10">Ready to supercharge your studies? Get started below.</p>
-          <div>
-            <h2 className="text-2xl font-semibold text-white mb-5">Create</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* The isFeatured prop is no longer necessary */}
-              <ActionCard title="Upload & Unlock Insights" description="Upload your notes in PDF, PPT, or image formats and instantly get concise summaries and visual mind maps powered by AI — no more endless scrolling through pages." icon="✨" buttonText="Upload Notes" onButtonClick={handleUploadNotesClick} />
-              <ActionCard title="Quiz yourself on any supported documents" description="Turn your study material into personalized quizzes and flashcards in seconds. Practice smarter with auto-generated questions that reinforce key concepts." icon="🧠" buttonText="Generate Quizzes" onButtonClick={handleActionRequiringFile} />
-              <ActionCard title="Chat & Ask Questions with AI" description="Stuck on a topic? Ask your doubts directly to our intelligent chatbot trained on your uploaded content and get clear, contextual answers instantly." icon="🤖" buttonText="Ask Anything, Anytime" onButtonClick={handleActionRequiringFile} />
-              <ActionCard title="Organize, Save & Access Anywhere" description="Save your processed notes, summaries, and quizzes in one place. Organize everything neatly and access your personal knowledge vault whenever you need it." icon="📱" buttonText="Save Notes" onButtonClick={handleActionRequiringFile} />
+            <h1 className="text-4xl font-bold mb-2 text-white">Welcome, Vaidehi!</h1>
+            <p className="text-gray-400 mb-10">Ready to supercharge your studies? Get started below.</p>
+            <div>
+                <h2 className="text-2xl font-semibold text-white mb-5">Create</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* The isFeatured prop is no longer needed */}
+                    <ActionCard
+                        title="Summarize Instantly"
+                        description="Upload your notes in PDF, PPT, or image formats and get concise AI-powered summaries that highlight the most important points."
+                        icon="✨"
+                        buttonText="Summarize Notes"
+                        onButtonClick={handleNavigateToUpload}
+                    />
+
+                    <ActionCard
+                        title="Generate MCQs"
+                        description="Turn your study material into personalized multiple-choice questions. Practice smarter with auto-generated quizzes that reinforce key concepts."
+                        icon="🧠"
+                        buttonText="Generate MCQs"
+                        onButtonClick={handleNavigateToUpload}
+                    />
+
+                    <ActionCard
+                        title="Mind Map"
+                        description="Visualize your notes as interactive mind maps. See connections, explore relationships, and strengthen your understanding at a glance."
+                        icon="🗺️"
+                        buttonText="Create Mind Map"
+                        onButtonClick={handleNavigateToUpload}
+                    />
+
+                    <ActionCard
+                        title="Save Notes"
+                        description="Store your processed notes, summaries, and quizzes in one secure place. Organize everything neatly and access your personal vault anytime."
+                        icon="📱"
+                        buttonText="Save Notes"
+                        onButtonClick={handleActionRequiringFile}
+                    />
+                </div>
             </div>
-          </div>
         </div>
     );
 };
@@ -132,14 +159,61 @@ const PlannerView: React.FC = () => {
             <p className="text-gray-400 mb-8">Tell the AI your goals, and it will generate a custom plan.</p>
             <div className="p-6 rounded-2xl bg-[#18181b] border border-gray-700">
                 <textarea ref={textAreaRef} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500" rows={5} placeholder="e.g., I have a math test on Friday and a history paper due next Monday..."></textarea>
-                <button onClick={handleGeneratePlan} className="primary-btn mt-4 w-full md:w-auto" disabled={isLoading}>
-                    {isLoading ? 'Generating Plan...' : 'Generate Plan'}
-                </button>
+                <button onClick={handleGeneratePlan} className="primary-btn mt-4 w-full md:w-auto" disabled={isLoading}>{isLoading ? 'Generating Plan...' : 'Generate Plan'}</button>
             </div>
             {plan && (<div className="mt-8 p-6 rounded-2xl bg-[#18181b] border border-gray-700"><h2 className="text-2xl font-semibold text-white mb-4">Your Custom Study Plan</h2><div className="prose-custom max-w-none" dangerouslySetInnerHTML={{ __html: plan }}></div></div>)}
         </div>
     );
 };
+
+interface Message { id: number; sender: 'user' | 'bot'; content: string; }
+
+const AIBotView: React.FC = () => {
+    const [messages, setMessages] = useState<Message[]>([
+        { id: 1, sender: 'bot', content: "Hello! I'm your AI assistant. Tell me what you'd like to do. \n\n**For example:**\n- `Summarize my dbms.pdf notes`\n- `Generate MCQs from history-lecture.pdf`"}
+    ]);
+    const [inputValue, setInputValue] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const chatEndRef = useRef<HTMLDivElement>(null);
+    useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+    const handleSendMessage = async () => {
+        const command = inputValue.trim();
+        if (!command || isLoading) return;
+        const userMessage: Message = { id: Date.now(), sender: 'user', content: command };
+        setMessages(prev => [...prev, userMessage]);
+        setInputValue('');
+        setIsLoading(true);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        let botResponse: Message;
+        if (command.toLowerCase().includes('summarize')) {
+            botResponse = { id: Date.now() + 1, sender: 'bot', content: "Okay, summarizing **dbms.pdf** for you..." };
+        } else {
+            botResponse = { id: Date.now() + 1, sender: 'bot', content: "Sorry, I can't do that yet." };
+        }
+        setMessages(prev => [...prev, botResponse]);
+        setIsLoading(false);
+    };
+    return (
+        <div className="p-8 h-full flex flex-col">
+            <h1 className="text-4xl font-bold mb-2 funky-font-title">AI Bot ✨</h1>
+            <p className="text-gray-400 mb-6 text-center">Use natural language to interact with your uploaded files.</p>
+            <div className="chat-window flex-1 bg-[#18181b] border border-gray-700 rounded-2xl p-4 overflow-y-auto custom-scrollbar flex flex-col">
+                {messages.map(msg => (
+                    <div key={msg.id} className={`chat-message ${msg.sender === 'user' ? 'user' : 'bot'}`}>
+                        <div className="message-content" dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) }}></div>
+                    </div>
+                ))}
+                {isLoading && <div className="chat-message bot"><div className="typing-indicator"><span></span><span></span><span></span></div></div>}
+                <div ref={chatEndRef} />
+            </div>
+            <div className="mt-4 flex items-center gap-2">
+                <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSendMessage} placeholder="e.g., Summarize my dbms.pdf notes" className="flex-grow bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500" disabled={isLoading} />
+                <button onClick={handleSendMessage} className="primary-btn px-6 py-3" disabled={isLoading}>Send</button>
+            </div>
+        </div>
+    );
+};
+
 
 // --- Main Section Component ---
 interface MainSectionProps {
@@ -156,6 +230,8 @@ const MainSection: React.FC<MainSectionProps> = ({ currentView, setCurrentView }
                 return <TrashView />;
             case 'planner':
                 return <PlannerView />;
+            case 'aiBot':
+                return <AIBotView />;
             case 'dashboard':
             default:
                 return <DashboardView setCurrentView={setCurrentView} />;
@@ -165,3 +241,4 @@ const MainSection: React.FC<MainSectionProps> = ({ currentView, setCurrentView }
 };
 
 export default MainSection;
+

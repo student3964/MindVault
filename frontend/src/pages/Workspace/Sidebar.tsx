@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// Define the types for the props
 interface SidebarProps {
   setCurrentView: (view: string) => void;
   currentView: string;
@@ -10,7 +9,6 @@ const Sidebar: React.FC<SidebarProps> = ({ setCurrentView, currentView }) => {
   const [isAccountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close the dropdown if you click outside of it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
@@ -26,10 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ setCurrentView, currentView }) => {
     return (
       <a
         href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          setCurrentView(viewName);
-        }}
+        onClick={(e) => { e.preventDefault(); setCurrentView(viewName); }}
         className={`flex items-center p-3 rounded-lg transition-colors text-slate-300 hover:bg-white/10 ${isActive ? 'bg-white/10 text-white font-semibold' : ''}`}
       >
         {children}
@@ -41,22 +36,13 @@ const Sidebar: React.FC<SidebarProps> = ({ setCurrentView, currentView }) => {
   return (
     <aside className="w-64 flex-shrink-0 bg-black/30 p-4 flex flex-col">
       <nav className="flex-grow space-y-2">
-        {/* --- Order Changed: MyVault is now first --- */}
-        <NavItem viewName="myVault" label="MyVault">
-          <span className="text-xl">🗂️</span>
-        </NavItem>
-        <NavItem viewName="dashboard" label="Dashboard">
-          <span className="text-xl">🏠</span>
-        </NavItem>
-        <NavItem viewName="planner" label="Planner">
-          <span className="text-xl">📅</span>
-        </NavItem>
-        <NavItem viewName="trash" label="Trash">
-          <span className="text-xl">🗑️</span>
-        </NavItem>
-        <NavItem viewName="history" label="History">
-          <span className="text-xl">🕒</span>
-        </NavItem>
+        {/* FIX: Order has been changed, and AI Bot has been added */}
+        <NavItem viewName="dashboard" label="Dashboard">🏠</NavItem>
+        <NavItem viewName="myVault" label="MyVault">🗂️</NavItem>
+        <NavItem viewName="aiBot" label="AI Bot">🤖</NavItem>
+        <NavItem viewName="planner" label="Planner">📅</NavItem>
+        <NavItem viewName="trash" label="Trash">🗑️</NavItem>
+        <NavItem viewName="history" label="History">🕒</NavItem>
       </nav>
       <div className="mt-auto relative" ref={accountMenuRef}>
         {isAccountMenuOpen && (

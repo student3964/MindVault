@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "@types/marked": "^5.0.2",
-    "marked": "^16.2.1"
+    "@types/react-scroll": "^1.8.10",
+    "marked": "^16.2.1",
+    "react-scroll": "^1.9.3"
   },
   "devDependencies": {
     "@types/react": "^19.1.12"

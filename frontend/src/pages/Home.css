@@ -1,7 +1,7 @@
 /* Home.css */
-@import url('https://fonts.googleapis.com/css2?family=Ink+Free&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Ink+Free&display=swap");
 
-/* Animations */
+/* --- Animations --- */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -12,13 +12,10 @@
     transform: translateY(0);
   }
 }
-
 .fade-in-section {
   animation: fadeIn 0.8s ease-out forwards;
   opacity: 0;
 }
-
-/* Purple flow/glow for main headings */
 @keyframes popInAndGlowPurple {
   0% {
     transform: scale(0.95);
@@ -27,7 +24,7 @@
   }
   50% {
     opacity: 1;
-    text-shadow: 0 0 10px #a020f0, 0 0 20px #a020f0; /* Purple glow */
+    text-shadow: 0 0 10px #a020f0, 0 0 20px #a020f0;
   }
   100% {
     transform: scale(1);
@@ -35,18 +32,17 @@
     text-shadow: none;
   }
 }
-
 .pop-up-text {
-  animation: popInAndGlowPurple 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+  animation: popInAndGlowPurple 1s cubic-bezier(0.68, -0.55, 0.27, 1.55)
+    forwards;
   opacity: 0;
   margin-top: 10px;
 }
 
+/* --- Main Container --- */
 .home-container {
-  /* Use the new GIF as a background with a dark overlay */
-  background: 
-    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
-    url('/homepage-gif.gif');
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("/homepage-gif.gif");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -54,80 +50,81 @@
   width: 100vw;
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
   color: white;
   overflow-x: hidden;
 }
 
+/* --- Navbar Styles --- */
 .nav-bar {
   background-color: #1a1a1a;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   border-bottom: 1px solid rgba(160, 32, 240, 0.2);
 }
-
-/* Updated navigation link styles with a purple hover effect */
-.nav-link {
-  color: #ccc;
-  transition: all 0.3s ease-in-out;
-  position: relative;
-  display: inline-block;
-  padding-bottom: 5px;
-}
-
-.nav-link::after {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 2px;
-  bottom: 0;
-  left: 0;
-  background-color: #a020f0; /* Purple hover underline */
-  transition: width 0.3s ease-in-out;
-}
-
-.nav-link:hover {
-  color: #a020f0; /* Purple hover text color */
-}
-
-.nav-link:hover::after {
-  width: 100%;
-}
-
-/* Updated logo hover effect */
 .nav-logo {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
   font-weight: bold;
   font-size: 1.5rem;
   color: white;
   transition: all 0.3s ease;
 }
-
 .nav-logo:hover {
   transform: scale(1.05);
-  color: #a020f0; /* Purple text color on hover */
+  color: #a020f0;
+}
+.nav-link {
+  color: #ccc;
+  font-weight: 600; /* All links are the same weight to prevent shifting */
+  transition: color 0.3s ease-in-out;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 5px;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #a020f0;
+  transition: width 0.3s ease-in-out;
+}
+.nav-link:hover {
+  color: #a020f0;
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+.nav-link.active {
+  color: #a020f0;
+}
+.nav-link.active::after {
+  width: 100%;
 }
 
+/* --- Titles & Headings --- */
 .funky-font-title {
-  font-family: 'Ink Free', cursive;
+  font-family: "Ink Free", cursive;
   font-weight: bold;
   font-size: 2rem;
   text-align: center;
   color: white;
   text-shadow: 1px 1px 5px rgba(160, 32, 240, 0.5);
 }
-
-/* Increased font size for 'Explore MindVault' */
 @media (min-width: 768px) {
   .funky-font-title {
     font-size: 2.5rem;
   }
 }
 
-/* Updated card hover animation with glow */
+/* --- Feature Cards --- */
 .feature-card {
-  flex: 1 1 200px; 
+  flex: 1 1 200px;
   min-width: 200px;
-  max-width: 280px; 
+  max-width: 280px;
   background: linear-gradient(to bottom right, #271348, #44298a);
   border-radius: 1rem;
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
@@ -139,26 +136,23 @@
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   border: 1px solid transparent;
 }
-
 .feature-card:hover {
-  transform: translateY(-10px) scale(1.02); /* Pop out effect */
-  box-shadow: 0 0 20px rgba(160, 32, 240, 0.8), 0 0 30px rgba(160, 32, 240, 0.5); /* Glow effect */
-  border: 1px solid rgba(160, 32, 240, 0.5); /* Glowing border */
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 0 20px rgba(160, 32, 240, 0.8), 0 0 30px rgba(160, 32, 240, 0.5);
+  border: 1px solid rgba(160, 32, 240, 0.5);
 }
-
 .feature-card-title {
   font-weight: 600;
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
 }
-
 .feature-card-description {
   font-size: 0.95rem;
   color: #ccc;
   margin-bottom: 1rem;
 }
 
-/* Modified `primary-btn` hover styles to remove glow and color change */
+/* --- Button Styles (RESTORED TO ORIGINAL) --- */
 .primary-btn {
   background-color: #9333ea;
   color: white;
@@ -166,24 +160,22 @@
   font-size: 0.9rem;
   font-weight: bold;
   border-radius: 0.75rem;
-  transition: transform 0.2s ease-in-out, background 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, background 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   cursor: pointer;
   border: none;
   display: inline-block;
   text-decoration: none;
 }
-
 .primary-btn:hover,
 .primary-btn:focus {
   transform: scale(1.08);
 }
-
 .primary-btn:active {
   background: #1a1a1a;
   transform: scale(0.95);
 }
 
-/* Removed `glow-btn` class as it's no longer needed for the desired effect */
 .glow-btn {
   background: transparent;
   border: 2px solid #6c2bd9;
@@ -195,21 +187,22 @@
   transition: all 0.2s ease-in-out;
   cursor: pointer;
   text-decoration: none;
+  /* Set a min-width to prevent shift between Login/Logout */
+  min-width: 90px;
+  text-align: center;
 }
-
-/* Modified `glow-btn` hover styles to remove the glow */
 .glow-btn:hover {
   border-color: #a020f0;
   transform: scale(1.05);
 }
 
+/* --- Layout Containers --- */
 .explore-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 2rem 2rem;
 }
-
 .explore-cards-row {
   display: flex;
   flex-wrap: wrap;
@@ -218,9 +211,9 @@
   gap: 1.5rem;
   width: 100%;
 }
-
 @media (min-width: 768px) {
   .explore-cards-row {
     flex-direction: row;
   }
 }
+

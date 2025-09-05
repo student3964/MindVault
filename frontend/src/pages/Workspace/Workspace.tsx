@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-//import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import './Workspace.css';
-import '../Home.css';
+import '../Home.css'; 
 import Sidebar from './Sidebar';
 import MainSection from './MainSection';
-import ChatModal from './ChatModal'; // Make sure this import is uncommented
+import ChatModal from './ChatModal';
 
 const Workspace: React.FC = () => {
-    //const navigate = useNavigate();
-    // FIX: Initial state is now empty, so no tab is active on load.
-    const [currentView, setCurrentView] = useState('');
+    const navigate = useNavigate();
+    // FIX: Default view is now 'dashboard'
+    const [currentView, setCurrentView] = useState('dashboard');
 
     return (
         <div className="workspace-container">
@@ -21,7 +21,6 @@ const Workspace: React.FC = () => {
                 <MainSection currentView={currentView} setCurrentView={setCurrentView} />
             </div>
 
-            {/* Re-enabling the ChatModal component */}
             <ChatModal />
         </div>
     );
