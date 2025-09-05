@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../../context/AuthContext'; // Import the useAuth hook
 
 interface SidebarProps {
   setCurrentView: (view: string) => void;
@@ -8,6 +9,12 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ setCurrentView, currentView }) => {
   const [isAccountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
+  
+  // --- Get the logged-in user from the AuthContext ---
+  const { user, logout } = useAuth();
+  
+  // --- Calculate the user's initial for the avatar ---
+  const userInitial = user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'U';
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,7 +43,6 @@ const Sidebar: React.FC<SidebarProps> = ({ setCurrentView, currentView }) => {
   return (
     <aside className="w-64 flex-shrink-0 bg-black/30 p-4 flex flex-col">
       <nav className="flex-grow space-y-2">
-        {/* FIX: Order has been changed, and AI Bot has been added */}
         <NavItem viewName="dashboard" label="Dashboard">🏠</NavItem>
         <NavItem viewName="myVault" label="MyVault">🗂️</NavItem>
         <NavItem viewName="aiBot" label="AI Bot">🤖</NavItem>
@@ -50,14 +56,16 @@ const Sidebar: React.FC<SidebarProps> = ({ setCurrentView, currentView }) => {
             <a href="#" className="block px-4 py-2 text-sm text-slate-300 hover:bg-white/10">My Profile</a>
             <a href="#" className="block px-4 py-2 text-sm text-slate-300 hover:bg-white/10">Settings</a>
             <div className="border-t border-gray-700 my-1"></div>
-            <a href="#" className="block px-4 py-2 text-sm text-red-400 hover:bg-white/10">Logout</a>
+            {/* Make the logout button functional */}
+            <a href="#" onClick={logout} className="block px-4 py-2 text-sm text-red-400 hover:bg-white/10">Logout</a>
           </div>
         )}
         <button
           onClick={() => setAccountMenuOpen(!isAccountMenuOpen)}
           className="w-full flex items-center p-3 rounded-lg text-slate-300 hover:bg-white/10 transition-colors"
         >
-          <img src="https://placehold.co/40x40/9333ea/ffffff?text=V" alt="User Avatar" className="w-8 h-8 rounded-full mr-3"/>
+          {/* --- Use the user's initial in the image URL --- */}
+          <img src={`https://placehold.co/40x40/9333ea/ffffff?text=${userInitial}`} alt="User Avatar" className="w-8 h-8 rounded-full mr-3"/>
           <span className="font-semibold">My Account</span>
         </button>
       </div>
