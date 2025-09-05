@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+//import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import './Workspace.css';
 import '../Home.css';
@@ -8,7 +8,7 @@ import MainSection from './MainSection';
 import ChatModal from './ChatModal'; // Make sure this import is uncommented
 
 const Workspace: React.FC = () => {
-    const navigate = useNavigate();
+    //const navigate = useNavigate();
     // FIX: Initial state is now empty, so no tab is active on load.
     const [currentView, setCurrentView] = useState('');
 
