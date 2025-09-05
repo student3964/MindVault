@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@types/marked": "^5.0.2",
+    "marked": "^16.2.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.12"
+  }
+}
