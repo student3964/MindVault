@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
+import { useAuth } from '../../context/AuthContext'; // 1. Import the useAuth hook
 
 // --- ActionCard component (for the Dashboard) ---
-// FIX: The border style is now always dashed and purple. The isFeatured prop has been removed.
 const ActionCard = ({ title, description, icon, buttonText, onButtonClick }: { title: string; description: string; icon: string; buttonText?: string; onButtonClick?: () => void; }) => {
     const borderStyle = "border-purple-500 border-dashed"; // Applied to all cards now
 
@@ -27,17 +27,19 @@ const ActionCard = ({ title, description, icon, buttonText, onButtonClick }: { t
 
 const DashboardView: React.FC<{ setCurrentView: (view: string) => void }> = ({ setCurrentView }) => {
     const navigate = useNavigate();
+    const { user } = useAuth(); // 2. Get the logged-in user from the context
+
     const handleNavigateToUpload = () => navigate('/upload-notes');
     const handleActionRequiringFile = () => setCurrentView('myVault');
 
     return (
         <div className="p-8 lg:p-12">
-            <h1 className="text-4xl font-bold mb-2 text-white">Welcome, Vaidehi!</h1>
+            {/* 3. Personalize the welcome message */}
+            <h1 className="text-4xl font-bold mb-2 text-white">Welcome, {user?.firstName || 'User'}!</h1>
             <p className="text-gray-400 mb-10">Ready to supercharge your studies? Get started below.</p>
             <div>
                 <h2 className="text-2xl font-semibold text-white mb-5">Create</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* The isFeatured prop is no longer needed */}
                     <ActionCard
                         title="Summarize Instantly"
                         description="Upload your notes in PDF, PPT, or image formats and get concise AI-powered summaries that highlight the most important points."
@@ -241,4 +243,3 @@ const MainSection: React.FC<MainSectionProps> = ({ currentView, setCurrentView }
 };
 
 export default MainSection;
-
