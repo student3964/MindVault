@@ -2,6 +2,8 @@
   "dependencies": {
     "@types/marked": "^5.0.2",
     "@types/react-scroll": "^1.8.10",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
     "marked": "^16.2.1",
     "react-scroll": "^1.9.3"
   },

@@ -1,23 +1,35 @@
 import { Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import Home from "./pages/Home";
 import UploadNotesPage from './pages/uploadNotes';
 import LoginPage from './pages/login';
 import SignupPage from './pages/signup';
 import AboutPage from './pages/About';
-import Workspace from './pages/Workspace/Workspace'; // <-- IMPORT
+import Workspace from './pages/Workspace/Workspace';
+// import ProtectedRoute from './components/ProtectedRoute'; // <-- Import the guard
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/upload-notes" element={<UploadNotesPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/workspace" element={<Workspace />} /> 
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/upload-notes" element={<UploadNotesPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/workspace" element={<Workspace />} />
+        {/* This route is now protected */}
+        {/* <Route 
+          path="/workspace" 
+          element={
+            <ProtectedRoute>
+              <Workspace />
+            </ProtectedRoute>
+          } 
+        /> */}
+      </Routes>
+    </AuthProvider>
   );
 }
 
 export default App;
-
