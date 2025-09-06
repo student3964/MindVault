@@ -1,5 +1,5 @@
 import React from 'react';
-import { scroller } from 'react-scroll';
+import { scroller, Link } from 'react-scroll';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import './Home.css'; // <-- Importing the separate CSS file
 
@@ -60,24 +60,36 @@ const Home: React.FC = () => {
 
           {/* Center: Navigation Tabs */}
           <div className="hidden md:flex space-x-8 text-lg font-medium">
-            <a
+            <Link
+              activeClass="active"
+              to="home"
+              spy={true}
+              smooth={true}
+              duration={500}
+              offset={-70}
               className="nav-link cursor-pointer transition-colors capitalize"
-              onClick={() => handleScrollTo('home')}
             >
               Home
-            </a>
-            <a
+            </Link>
+            <Link
+              activeClass="active"
+              to="explore"
+              spy={true}
+              smooth={true}
+              duration={500}
+              offset={-70}
               className="nav-link cursor-pointer transition-colors capitalize"
-              onClick={() => handleScrollTo('explore')}
             >
               Explore
-            </a>
+            </Link>
+            {/* This link remains the same since it navigates to a different page */}
             <a
               className="nav-link cursor-pointer transition-colors capitalize"
               onClick={() => navigate('/workspace')}
             >
               Workspace
             </a>
+            {/* This link also remains the same */}
             <RouterLink
               to="/about"
               className="nav-link cursor-pointer transition-colors capitalize"
@@ -85,7 +97,6 @@ const Home: React.FC = () => {
               About
             </RouterLink>
           </div>
-
           <div className="flex">
             <button className="glow-btn" onClick={handleLoginClick}>
               Login
