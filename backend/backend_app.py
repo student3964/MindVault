@@ -18,8 +18,11 @@ from functools import wraps
 load_dotenv()
 app = Flask(__name__)
 
-# This simpler configuration is often more reliable for handling preflight requests
-CORS(app, origins="http://localhost:3000", supports_credentials=True)
+# Be more explicit about which headers are allowed for CORS
+CORS(app,
+     origins="http://localhost:3000",
+     allow_headers=["Content-Type", "x-auth-token"],
+     supports_credentials=True)
 
 # --- Database and JWT Config ---
 app.config['MONGODB_SETTINGS'] = {
@@ -34,6 +37,7 @@ class User(db.Document):
     firstName = db.StringField(required=True)
     email = db.StringField(required=True, unique=True)
     password = db.StringField(required=True)
+    meta = {'collection': 'users'}  # <-- Add this line
 
 # --- Middleware to protect routes ---
 def token_required(f):
@@ -53,21 +57,30 @@ def token_required(f):
 # --- Authentication Routes ---
 @app.route('/api/auth/register', methods=['POST'])
 def register_user():
-    body = request.get_json()
-    if User.objects(email=body.get('email')).first():
-        return jsonify({"error": "User with this email already exists"}), 400
+    try:
+        body = request.get_json()
+        if User.objects(email=body.get('email')).first():
+            print("ERROR: User already exists.")
+            return jsonify({"error": "User with this email already exists"}), 400
 
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(body.get('password').encode('utf-8'), salt)
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(body.get('password').encode('utf-8'), salt)
 
-    user = User(
-        firstName=body.get('firstName'),
-        email=body.get('email'),
-        password=hashed_password.decode('utf-8')
-    ).save()
+        print("INFO: Hashed password, attempting to save user...")
+        user = User(
+            firstName=body.get('firstName'),
+            email=body.get('email'),
+            password=hashed_password.decode('utf-8')
+        ).save()
 
-    return jsonify({"message": "User registered successfully"}), 201
+        # If this line prints, the save was successful.
+        print(f"SUCCESS: User '{user.email}' saved to database with ID: {user.id}")
+        return jsonify({"message": "User registered successfully"}), 201
 
+    except Exception as e:
+        # If there is any error during the try block, it will be caught and printed.
+        print(f"CRITICAL: A database error occurred: {e}")
+        return jsonify({"error": "An internal server error occurred."}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
 def login_user():
@@ -205,6 +218,16 @@ def summarize_endpoint(file_id):
 @app.route('/api/ping', methods=['GET'])
 def ping_pong():
     return jsonify({"message": "pong!"})
+
+# --- Temporary route to view all users for debugging ---
+@app.route('/api/users', methods=['GET'])
+@token_required
+def get_all_users(current_user):
+    users = User.objects().to_json()
+    # The to_json() method returns a JSON string, which is what we want to send.
+    # We need to create a Flask Response object to send it with the correct content type.
+    from flask import Response
+    return Response(users, mimetype="application/json", status=200)
 
 # --- Run App ---
 if __name__ == '__main__':
