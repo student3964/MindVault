@@ -104,16 +104,6 @@ const ChatModal: React.FC = () => {
                                 </div>
                             )}
                         </div>
-
-                        {/* <div className="p-4 border-t border-gray-700 flex-shrink-0">
-                            <div className="flex items-center space-x-2">
-                                <input ref={chatInputRef} type="text" className="flex-grow bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none" placeholder="Ask a question..." onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} disabled={isLoading} />
-                                <button onClick={handleSendMessage} className="bg-purple-600 hover:bg-purple-700 h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0" disabled={isLoading}>
-                                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                                </button>
-                            </div>
-                        </div> */}
-                        {/* This is the corrected code block */}
                         <div className="p-4 border-t border-gray-700 flex-shrink-0">
                             <div className="flex items-center space-x-2">
                                 <input ref={chatInputRef} type="text" className="flex-grow bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Ask a question..." onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} disabled={isLoading} />
