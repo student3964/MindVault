@@ -1,0 +1,44 @@
+/* frontend/src/pages/Workspace/ChatModal.css */
+
+/* Custom scrollbar for the chat message area */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #4a4a4a;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6a6a6a;
+}
+
+/* For the bot's typing indicator */
+.dot-bounce {
+  animation: bounce 1s infinite alternate;
+}
+.dot-1 { animation-delay: 0s; }
+.dot-2 { animation-delay: 0.2s; }
+.dot-3 { animation-delay: 0.4s; }
+
+/* Base styles for rendered markdown content in the chat */
+.prose-custom {
+  color: #d1d5db; /* text-gray-300 */
+}
+.prose-custom p {
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+.prose-custom strong {
+  color: #fff;
+}
+.prose-custom ul, .prose-custom ol {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+.prose-custom li > p {
+    margin: 0;
+}
