@@ -4,14 +4,18 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 interface NavbarProps {
   activePage: 'home' | 'explore' | 'workspace' | 'about';
   isLoggedIn?: boolean;
+  onWorkspaceClick?: () => void; // New optional prop
 }
 
-const Navbar: React.FC<NavbarProps> = ({ activePage, isLoggedIn = false }) => {
+const Navbar: React.FC<NavbarProps> = ({ activePage, isLoggedIn = false, onWorkspaceClick }) => {
   const navigate = useNavigate();
 
   const handleLoginClick = () => navigate('/login');
   const handleGetStartedClick = () => navigate('/signup');
-  const handleLogoutClick = () => navigate('/');
+  const handleLogoutClick = () => {
+    // In a real app, you would clear auth context/storage here
+    window.location.href = '/'; // Go to homepage and reload to clear state
+  };
 
   return (
     <nav className="nav-bar fixed w-full top-0 z-50">
@@ -34,12 +38,15 @@ const Navbar: React.FC<NavbarProps> = ({ activePage, isLoggedIn = false }) => {
           >
             Explore
           </RouterLink>
-          <RouterLink
-            to="/workspace"
-            className={`nav-link ${activePage === 'workspace' ? 'active' : ''}`}
+          
+          {/* This Workspace link is now smarter */}
+          <a
+            onClick={onWorkspaceClick ? onWorkspaceClick : () => navigate('/workspace')}
+            className={`nav-link cursor-pointer ${activePage === 'workspace' ? 'active' : ''}`}
           >
             Workspace
-          </RouterLink>
+          </a>
+
           <RouterLink
             to="/about"
             className={`nav-link ${activePage === 'about' ? 'active' : ''}`}
