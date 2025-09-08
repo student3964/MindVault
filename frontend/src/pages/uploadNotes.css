@@ -1,6 +1,7 @@
 
 /* uploadNotes.css */
 @import url('https://fonts.googleapis.com/css2?family=Ink+Free&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lora:wght@400;600&family=Ink+Free&display=swap'); /* Added Poppins and Lora */
 
 .get-started-container {
   background: linear-gradient(to bottom, #11081a, #0b0510);
@@ -14,14 +15,25 @@
   padding-top: 70px;
 }
 
-.funky-font {
+/* .funky-font {
   font-family: 'Ink Free', cursive;
   font-weight: bold;
   text-shadow: 1px 1px white;
+} */
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700; /* Bold */
+}
+
+/* New font class for subheadings */
+.font-lora {
+  font-family: 'Lora', serif;
+  font-weight: 600; /* Semi-bold */
 }
 
 .supported-types {
-  font-family: 'Ink Free', cursive;
+  /* Existing styles for supported-types, ensure font-poppins in JSX overrides */
   font-weight: bold;
   font-size: 2rem;
   text-align: center;
