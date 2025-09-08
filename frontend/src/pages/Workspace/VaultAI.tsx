@@ -10,8 +10,10 @@ interface Message {
 }
 
 const VaultAI: React.FC = () => {
+    // The initial messages are now separated into two distinct messages
     const [messages, setMessages] = useState<Message[]>([
-        { id: 1, sender: 'bot', content: "Hi there! I'm your AI helper. What would you like to do today?\n\n**For example:**\n- `Summarize my DBMS notes (dbms.pdf)`\n- `Create MCQs from history-lecture.pdf`" },
+        { id: 1, sender: 'bot', content: "Hi there! I'm your AI helper. What would you like to do today?"},
+        { id: 2, sender: 'bot', content: "**For example:**\n- `Summarize my DBMS notes (dbms.pdf)`\n- `Create MCQs from history-lecture.pdf`" },
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +64,8 @@ const VaultAI: React.FC = () => {
             <div className="flex-1 p-4 rounded-2xl bg-white/10 border border-white/20 overflow-y-auto custom-scrollbar flex flex-col gap-4 mx-auto w-full max-w-[80%] max-h-[70%]">
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-                        <div className={`max-w-[70%] px-4 py-2 rounded-xl text-white break-words ${msg.sender === "user" ? "bg-purple-600 rounded-tr-none" : "bg-gray-700 rounded-xl"}`} dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) }}></div>
+                        {/* Apply different styles based on the message ID to target the example message */}
+                        <div className={`break-words max-w-[70%] px-4 py-2 rounded-xl text-white ${msg.sender === "user" ? "bg-purple-600 rounded-tr-none" : "bg-gray-700 rounded-xl"} ${msg.id === 2 ? 'text-sm max-w-[60%]' : ''}`} dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) }}></div>
                     </div>
                 ))}
                 {isLoading && (<div className="flex justify-start"><div className="bg-gray-700 px-4 py-2 rounded-xl flex gap-1">{[0, 150, 300].map((delay, index) => (<span key={index} className="bg-white w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: `${delay}ms` }}></span>))}</div></div>)}
