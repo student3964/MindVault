@@ -28,7 +28,7 @@ const Workspace: React.FC = () => {
                 <MainSection currentView={currentView} setCurrentView={setCurrentView} />
             </div>
 
-            <ChatModal />
+            {currentView !== "vaultAI" && <ChatModal />}
         </div>
     );
 };
