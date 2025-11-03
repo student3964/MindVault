@@ -1,22 +1,29 @@
-// import React from 'react';
-// import { Navigate } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
+// frontend/src/components/ProtectedRoute.tsx
 
-// const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-//     const { token, isLoading } = useAuth();
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-//     if (isLoading) {
-//         // You can show a loading spinner here while checking auth state
-//         return <div>Loading...</div>;
-//     }
+const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+    const { isLoggedIn, loading } = useAuth();
 
-//     if (!token) {
-//         // User not logged in, redirect to login page
-//         return <Navigate to="/login" />;
-//     }
+    // While we are checking for the token, show a loading state.
+    if (loading) {
+        // You can replace this with a more stylish spinner component
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <h2>Loading...</h2>
+            </div>
+        );
+    }
 
-//     // User is logged in, show the page
-//     return children;
-// };
+    // After loading, if the user is not logged in, redirect to login page.
+    if (!isLoggedIn) {
+        return <Navigate to="/login" replace />;
+    }
 
-// export default ProtectedRoute;
+    // If loading is finished and user is logged in, show the protected content.
+    return children;
+};
+
+export default ProtectedRoute;

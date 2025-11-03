@@ -80,3 +80,9 @@ body,
   margin: 0;
   padding: 0;
 }
+
+/* ✅ Fix navbar shifting between pages (reserve scrollbar space) */
+html {
+  overflow-y: scroll; /* Always show scrollbar space */
+  scrollbar-gutter: stable; /* Modern browsers */
+}

@@ -1,33 +1,44 @@
 // frontend/src/components/Layout.tsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
-import Footer from './Footer'; // We will use your footer component
+import Footer from './Footer'; // Ensure Footer is imported
 import { useAuth } from '../context/AuthContext';
 
 const Layout: React.FC = () => {
-  const { isLoggedIn } = useAuth(); // Get login state from context
+  const { isLoggedIn } = useAuth();
   const location = useLocation();
+  const [activePage, setActivePage] = useState<'home' | 'explore' | 'workspace' | 'about'>('home');
 
-  // This function determines which nav link should be active
-  const getActivePage = () => {
+  // This effect synchronizes the active nav link with the current URL path
+  useEffect(() => {
     const { pathname } = location;
-    if (pathname.startsWith('/workspace')) return 'workspace';
-    if (pathname === '/about') return 'about';
-    // Add other pages if needed
-    return 'home'; // Default
-  };
+    if (pathname.startsWith('/workspace')) {
+      setActivePage('workspace');
+    } else if (pathname === '/about') {
+      setActivePage('about');
+    } else if (pathname === '/') {
+      // When navigating to the home page, default to 'home' active.
+      // Clicks on 'Home' or 'Explore' will override this via the onNavClick callback.
+      setActivePage('home');
+    }
+  }, [location]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#11081a]">
-      <Navbar activePage={getActivePage()} isLoggedIn={isLoggedIn} />
+      <Navbar
+        activePage={activePage}
+        isLoggedIn={isLoggedIn}
+        onNavClick={setActivePage} // Pass the setter function to Navbar
+      />
       
-      {/* Outlet is a placeholder where your page (Home, About, etc.) will be rendered */}
-      <main className="flex-grow">
+      {/* Outlet is a placeholder where your page (Home, About, etc.) content is rendered */}
+      <div className="flex-grow">
         <Outlet />
-      </main>
-
+      </div>
+      
+      {/* 1. ADDED: Footer component is now rendered on all pages wrapped by Layout */}
       <Footer />
     </div>
   );

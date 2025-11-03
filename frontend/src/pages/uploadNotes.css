@@ -344,4 +344,195 @@
   animation: borderGlow 2s ease-in-out infinite;
 }
 
+/* --- MCQ STYLES --- */
+.mcq-container {
+  margin-top: 20px;
+}
 
+.mcq-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two-column layout */
+  gap: 16px;
+}
+
+.mcq-card {
+  background: #1f1f1f;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  transition: transform 0.2s ease-in-out;
+  text-align: left;
+}
+
+.mcq-card:hover {
+  transform: translateY(-4px);
+}
+
+.mcq-question {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.mcq-options {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 10px;
+}
+
+.mcq-option {
+  margin: 6px 0;
+  padding: 6px 10px;
+  background: #292929;
+  border-radius: 6px;
+  color: #ddd;
+}
+
+.option-label {
+  font-weight: bold;
+  margin-right: 6px;
+  color: #a020f0;
+}
+
+.mcq-answer {
+  color: #2dd4bf;
+  font-weight: 500;
+}
+
+/* --- Summary Styles --- */
+.summary-card {
+  background: #1f1f1f;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  text-align: left;
+}
+
+.summary-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #a020f0;
+}
+
+.summary-list {
+  list-style: disc;
+  padding-left: 20px;
+  color: #ddd;
+  line-height: 1.6;
+}
+
+/* --- MCQ Styles (Interactive Quiz) --- */
+.mcq-container {
+  margin-top: 20px;
+}
+
+.mcq-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2-column layout */
+  gap: 16px;
+}
+
+.mcq-card {
+  background: #1f1f1f;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  transition: transform 0.2s ease-in-out;
+  text-align: left;
+}
+
+.mcq-card:hover {
+  transform: translateY(-4px);
+}
+
+.mcq-question {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.mcq-options {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 10px;
+}
+
+.mcq-option {
+  margin: 6px 0;
+  padding: 8px 12px;
+  background: #292929;
+  border-radius: 6px;
+  color: #ddd;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mcq-option:hover {
+  background: #383838;
+}
+
+.option-label {
+  font-weight: bold;
+  margin-right: 6px;
+  color: #a020f0;
+}
+
+/* Feedback & selection */
+.correct {
+  background: #065f46 !important; /* green */
+  color: #fff !important;
+}
+
+.incorrect {
+  background: #7f1d1d !important; /* red */
+  color: #fff !important;
+}
+
+.mcq-feedback {
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.feedback-correct {
+  color: #10b981; /* green */
+}
+
+.feedback-incorrect {
+  color: #ef4444; /* red */
+}
+
+/* --- NEW: Back Button Styling (Top Left, Purple) --- */
+.back-to-workspace-btn {
+  background-color: #333; /* Dark Gray */
+  color: white;
+  border: 1px solid #333; /* Solid border for shape */
+  border-radius: 9999px; /* Fully rounded corners (pill shape) */
+  padding: 10px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out; /* Smooth transition for hover effect */
+  
+  /* Positioning the button */
+  position: fixed; 
+  top: 90px;      /* Adjust below the Navbar */
+  left: 115px;      /* 🌟 FIX: Moved to the right 🌟 */
+  z-index: 10; 
+}
+
+.back-to-workspace-btn:hover {
+  background-color: #3d3d3d; /* Slightly lighter gray on hover */
+  border-color: #a020f0; /* Neon purple border (still keeping this for outline effect) */
+  /* REMOVED: box-shadow: 0 0 10px #a020f0, 0 0 20px #a020f080; (to remove glow) */
+}
+
+/* --- NEW: Heading Styling Fix (Less Bold) --- */
+/* To match the style of the paragraph text, we override the H1's default bold font-weight */
+.light-heading {
+  font-weight: 400; /* Standard/Normal weight */
+  color: white; 
+  text-align: center;
+}

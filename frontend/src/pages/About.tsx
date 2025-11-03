@@ -1,43 +1,190 @@
-// frontend/src/pages/About.tsx
+import { useEffect, useRef } from "react";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
+import "./About.css";
 
-import React from 'react';
+const About = () => {
+  const animatedContainerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
-// A consistent FeatureCard component for this page
-const FeatureCard = ({ icon, title, description }: { icon: string; title: string; description: string }) => (
-    <div className="flex flex-1 flex-col justify-between rounded-2xl border border-transparent bg-gradient-to-br from-[#271348] to-[#44298a] p-6 text-center shadow-lg transition-all hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 hover:border-purple-500/50" style={{minWidth: '200px', maxWidth: '280px'}}>
-        <div className="text-center">
-            <div className="mb-4 text-4xl text-purple-400">{icon}</div>
-            <h3 className="mb-2 text-xl font-semibold">{title}</h3>
-            <p className="text-sm text-gray-300">{description}</p>
-        </div>
-    </div>
-);
+  const handleLoginClick = () => {
+    navigate("/login");
+  };
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
 
-const About: React.FC = () => {
+    const animatedElements = animatedContainerRef.current
+      ? Array.from(
+          animatedContainerRef.current.querySelectorAll(
+            ".fade-in, .slide-in-left, .slide-in-right, .slide-in-up"
+          )
+        )
+      : [];
+
+    if (animatedElements) {
+      animatedElements.forEach((el) => observer.observe(el));
+    }
+
+    return () => {
+      if (animatedElements) {
+        animatedElements.forEach((el) => observer.unobserve(el));
+      }
+      observer.disconnect();
+    };
+  }, []);
+
   return (
-    // The only change is here: I've added 'pb-20' for extra padding at the bottom.
-    <div className="pt-24 pb-20 text-white"> 
-      <section className="flex flex-col items-center justify-center px-8 py-20 text-center">
-        <h1 className="funky-font-title mb-6 text-5xl font-bold md:text-6xl" style={{fontFamily: '"Ink Free", cursive'}}>
-            About MindVault
-        </h1>
-        <div className="max-w-4xl space-y-6 text-lg leading-relaxed text-gray-300">
-          <p>MindVault is an AI-powered centralized workspace designed to address the challenges students face in managing and understanding a large volume of educational resources—from notes and PDFs to lecture recordings and tutorials.</p>
-          <p>Our platform turns passive content into active learning tools by offering a unified space for note-taking, Q&A, and summarization.</p>
-        </div>
-      </section>
-
-      <section className="flex flex-col items-center justify-center bg-black/20 px-8 py-20">
-          <h2 className="funky-font-title mb-12 text-center text-4xl font-bold" style={{fontFamily: '"Ink Free", cursive'}}>
-            Our Features
-          </h2>
-          <div className="flex w-full max-w-6xl flex-wrap items-stretch justify-center gap-8">
-            <FeatureCard icon="📑" title="Smart Summaries & Mind Maps" description="Instantly get concise summaries and visual mind maps powered by AI." />
-            <FeatureCard icon="🧠" title="Personalized Quizzes" description="Turn your study material into personalized quizzes and flashcards in seconds." />
-            <FeatureCard icon="🤖" title="Interactive Q&A Chatbot" description="Ask doubts trained on your uploaded content and get clear, contextual answers." />
-            <FeatureCard icon="📱" title="Your Knowledge Vault" description="Save and organize everything neatly and access your personal knowledge vault anytime." />
+    <div className="home-container font-sans min-h-screen">
+      {/* ABOUT PAGE */}
+      <section
+        id="about"
+        className="about-section pt-24 md:pt-32 px-4 text-gray-100 mt-24"
+      >
+        {/* OUR MISSION & VISION */}
+        <div className="about-section mission py-16 px-6 rounded-lg mb-24">
+          <h2 className="shiny-text mb-12">Our Mission & Vision</h2>
+          <div className="text-center">
+            <p className="mission-description">
+              At MindVault, our mission is to transform the way students learn
+              by turning scattered resources into clear, connected, and
+              interactive knowledge.
+            </p>
+            <p className="mission-description">
+              We aim to remove the stress of managing information, so learners
+              can focus on what truly matters—understanding and applying it.
+            </p>
+            <p className="mission-description">
+              We envision a world where AI becomes every student’s personal
+              learning companion—making education more accessible, engaging, and
+              effective.
+            </p>
           </div>
+        </div>
+
+        {/* HOW IT WORKS */}
+        <div className="about-section how-it-works py-16 px-6 rounded-lg">
+          <div ref={animatedContainerRef}>
+            <h2 className="how-heading slide-in-up">How It Works</h2>
+
+            {/* AI-Powered Transformation */}
+            <div className="flex flex-col md:flex-row items-center mb-24">
+              <div className="md:w-1/2 py-6 pl-6 pr-2 slide-in-left">
+                <h3 className="text-3xl font-semibold text-purple-400 mb-4">
+                  AI-Powered Transformation
+                </h3>
+                <p className="text-gray-300 mb-4">
+                  MindVault leverages the Gemini API to turn your passive notes
+                  into dynamic learning tools.
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-gray-400">
+                  <li>
+                    <p className="font-bold inline">AI-driven summarization</p>
+                    for quick review of large documents.
+                  </li>
+                  <li>
+                    <p className="font-bold inline">Automated quiz generation</p>
+                    to test your knowledge retention.
+                  </li>
+                  <li>
+                    <p className="font-bold inline">Mind map creation</p> to help
+                    visualize complex topics.
+                  </li>
+                </ul>
+              </div>
+              <div className="md:w-1/2 p-6 slide-in-right">
+                <div className="info-card">
+                  <div className="text-purple-400 text-6xl mb-4 text-center">
+                    🧠
+                  </div>
+                  <p className="text-lg text-gray-300 text-center">
+                    Transforming your study habits with intelligence and efficiency.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Seamless Interaction */}
+            <div className="flex flex-col md:flex-row-reverse items-center mb-24">
+              <div className="md:w-1/2 py-6 pl-10 pr-6 slide-in-right">
+                <h3 className="text-3xl font-semibold text-purple-400 mb-4">
+                  Seamless Interaction
+                </h3>
+                <p className="text-gray-300 mb-4">
+                  Interact with your documents like never before. MindVault
+                  supports various file types and smart tools.
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-gray-400">
+                  <li>
+                    <p className="font-bold inline">Interactive AI Chat</p> for
+                    instant answers.
+                  </li>
+                  <li>
+                    Transcribe <p className="font-bold inline">lectures</p> &
+                    <p className="font-bold inline"> images</p> into text.
+                  </li>
+                  <li>
+                    <p className="font-bold inline">Chat History</p> saved for
+                    easy revisit.
+                  </li>
+                </ul>
+              </div>
+              <div className="md:w-1/2 p-6 slide-in-left">
+                <div className="info-card">
+                  <div className="text-purple-400 text-6xl mb-4 text-center">
+                    💬
+                  </div>
+                  <p className="text-lg text-gray-300 text-center">
+                    Engage with your notes through intelligent, conversational AI.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Built for Collaboration */}
+            <div className="flex flex-col md:flex-row items-center mb-24">
+              <div className="md:w-1/2 py-6 pl-6 pr-2 slide-in-left">
+                <h3 className="text-3xl font-semibold text-purple-400 mb-4">
+                  Built for Collaboration
+                </h3>
+                <p className="text-gray-300 mb-4">
+                  MindVault is designed for teamwork and intelligent planning to
+                  help you succeed.
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-gray-400">
+                  <li>Collaborate on notes & summaries in real-time.</li>
+                  <li>
+                    <p className="font-bold inline">AI-Powered Calendar</p> for
+                    optimized study schedules.
+                  </li>
+                  <li>
+                    A strong foundation for{" "}
+                    <p className="font-bold inline">academic success</p>.
+                  </li>
+                </ul>
+              </div>
+              <div className="md:w-1/2 p-6 slide-in-right">
+                <div className="info-card">
+                  <div className="text-purple-400 text-6xl mb-4 text-center">
+                    👥
+                  </div>
+                  <p className="text-lg text-gray-300 text-center">
+                    Learn together and plan your future with smart, shared tools.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );
