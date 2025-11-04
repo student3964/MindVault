@@ -324,6 +324,16 @@ def login_user():
 def get_current_user(current_user):
     return jsonify(id=str(current_user.id), firstName=current_user.firstName, email=current_user.email)
 
+@app.route('/api/planner/tasks/<task_id>', methods=['DELETE'])
+@token_required
+def delete_task(current_user, task_id):
+    task = PlannerTask.objects(id=task_id, user_id=current_user).first()
+    if not task:
+        return jsonify({"error": "Not found"}), 404
+    task.delete()
+    return jsonify({"message": "Task deleted successfully"}), 200
+
+
 # ---------------- RUN APP ----------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

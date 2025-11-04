@@ -14,7 +14,12 @@ const UpcomingDeadlines: React.FC = () => {
     try {
       const now = new Date();
       const from = now.toISOString();
-      const to = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate()).toISOString();
+      const to = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        now.getDate()
+      ).toISOString();
+
       const res = await fetchEvents(from, to);
       setEvents(res.events || []);
     } catch (e) {
@@ -30,23 +35,20 @@ const UpcomingDeadlines: React.FC = () => {
 
   const renderEvent = (event: EventItem) => {
     const daysLeft =
-      (new Date(event.deadline).getTime() - Date.now()) / (1000 * 3600 * 24);
+      (new Date(event.deadline).getTime() - Date.now()) /
+      (1000 * 3600 * 24);
 
     let colorClass = "";
-    if (daysLeft <= 0) colorClass = "text-red-400";
-    else if (daysLeft <= 2) colorClass = "text-yellow-400";
-    else colorClass = "text-green-400";
-
-    const isPast = daysLeft <= 0;
+    if (daysLeft <= 0) colorClass = "text-red-400";        // expired
+    else if (daysLeft <= 2) colorClass = "text-yellow-400"; // near
+    else colorClass = "text-green-400";                     // upcoming
 
     return (
       <li
         key={event._id}
-        className={`flex justify-between items-center py-1 border-b border-slate-700 last:border-b-0 text-sm ${
-          isPast ? "line-through opacity-60" : ""
-        }`}
+        className="flex justify-between items-center py-1 border-b border-slate-700 last:border-b-0 text-sm"
       >
-        <span className={`${colorClass}`}>{event.title}</span>
+        <span className={colorClass}>{event.title}</span>
         <span className="text-gray-400">
           {new Date(event.deadline).toLocaleDateString()}
         </span>
@@ -63,7 +65,9 @@ const UpcomingDeadlines: React.FC = () => {
         {events.length > 0 ? (
           events.map((event) => renderEvent(event))
         ) : (
-          <p className="text-gray-500 text-sm italic">No upcoming deadlines</p>
+          <p className="text-gray-500 text-sm italic">
+            No upcoming deadlines
+          </p>
         )}
       </ul>
     </div>
