@@ -23,10 +23,16 @@ load_dotenv()
 app = Flask(__name__)
 
 CORS(app,
-     origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+     origins=[
+         "http://localhost:3000",
+         "http://127.0.0.1:3000",
+         "http://localhost:5173",
+         "http://127.0.0.1:5173"
+     ],
      allow_headers=["Content-Type", "x-auth-token", "Authorization"],
      supports_credentials=True,
      methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"])
+
 
 app.config['MONGODB_SETTINGS'] = {
     'db': 'mindvault_db',
@@ -332,6 +338,116 @@ def delete_task(current_user, task_id):
         return jsonify({"error": "Not found"}), 404
     task.delete()
     return jsonify({"message": "Task deleted successfully"}), 200
+
+# ---------------- FILE UPLOAD & AI ROUTES ----------------
+@app.route('/api/upload', methods=['POST'])
+@token_required
+def upload_file(current_user):
+    """Handles file upload and stores it temporarily"""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files['file']
+    if not file.filename:
+        return jsonify({"error": "Empty filename"}), 400
+
+    # Save file with a unique name
+    file_id = str(uuid.uuid4())
+    ext = os.path.splitext(file.filename)[1]
+    save_path = os.path.join(TEMP_UPLOAD_FOLDER, f"{file_id}{ext}")
+    file.save(save_path)
+
+    return jsonify({"fileId": file_id}), 200
+
+
+@app.route('/api/summarize/<file_id>', methods=['GET'])
+@token_required
+def summarize_file(current_user, file_id):
+    """Reads the uploaded file and generates a summary using Gemini"""
+    try:
+        # Find the file in temp_uploads
+        target_file = None
+        for f in os.listdir(TEMP_UPLOAD_FOLDER):
+            if f.startswith(file_id):
+                target_file = os.path.join(TEMP_UPLOAD_FOLDER, f)
+                break
+        if not target_file or not os.path.exists(target_file):
+            return jsonify({"error": "File not found"}), 404
+
+        # Extract text (PDF / PPT / TXT supported)
+        text_content = ""
+        if target_file.endswith(".pdf"):
+            with fitz.open(target_file) as doc:
+                text_content = "\n".join([page.get_text() for page in doc])
+        elif target_file.endswith((".pptx", ".ppt")):
+            prs = Presentation(target_file)
+            for slide in prs.slides:
+                for shape in slide.shapes:
+                    if hasattr(shape, "text"):
+                        text_content += shape.text + "\n"
+        elif target_file.endswith(".txt"):
+            with open(target_file, "r", encoding="utf-8") as f:
+                text_content = f.read()
+        else:
+            return jsonify({"error": "Unsupported file type"}), 400
+
+        # Generate summary using Gemini
+        model = genai.GenerativeModel("gemini-2.0-flash")
+        prompt = f"Summarize this text concisely:\n\n{text_content[:5000]}"
+        response = model.generate_content(prompt)
+        summary = response.text.strip() if hasattr(response, "text") else "No summary generated."
+
+        return jsonify({"summary": summary}), 200
+
+    except Exception as e:
+        print("❌ summarize_file error:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/mcqs/<file_id>', methods=['GET'])
+@token_required
+def generate_mcqs(current_user, file_id):
+    """Generates MCQs from the uploaded file using Gemini"""
+    try:
+        # Find the file in temp_uploads
+        target_file = None
+        for f in os.listdir(TEMP_UPLOAD_FOLDER):
+            if f.startswith(file_id):
+                target_file = os.path.join(TEMP_UPLOAD_FOLDER, f)
+                break
+        if not target_file or not os.path.exists(target_file):
+            return jsonify({"error": "File not found"}), 404
+
+        # Extract text
+        text_content = ""
+        if target_file.endswith(".pdf"):
+            with fitz.open(target_file) as doc:
+                text_content = "\n".join([page.get_text() for page in doc])
+        elif target_file.endswith((".pptx", ".ppt")):
+            prs = Presentation(target_file)
+            for slide in prs.slides:
+                for shape in slide.shapes:
+                    if hasattr(shape, "text"):
+                        text_content += shape.text + "\n"
+        elif target_file.endswith(".txt"):
+            with open(target_file, "r", encoding="utf-8") as f:
+                text_content = f.read()
+
+        model = genai.GenerativeModel("gemini-2.0-flash")
+        prompt = f"Generate 5 MCQs from this content with options and correct answers in JSON format:\n{text_content[:5000]}"
+        response = model.generate_content(prompt)
+
+        mcqs_json = []
+        try:
+            mcqs_json = json.loads(response.text)
+        except Exception:
+            mcqs_json = []  # fallback if not parseable
+
+        return jsonify({"mcqs": mcqs_json}), 200
+
+    except Exception as e:
+        print("❌ generate_mcqs error:", e)
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- RUN APP ----------------
