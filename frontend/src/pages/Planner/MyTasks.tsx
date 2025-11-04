@@ -24,7 +24,13 @@ const MyTasks: React.FC<MyTasksProps> = ({ refreshTrigger }) => {
   const loadTasks = async () => {
     try {
       const data = await fetchTasks();
-      setTasks(data || []);
+      if (data && Array.isArray(data.tasks)) {
+        setTasks(data.tasks);
+      } else if (Array.isArray(data)) {
+        setTasks(data);
+      } else {
+        setTasks([]);
+      }
     } catch (e) {
       console.error("Error fetching tasks:", e);
     }

@@ -43,18 +43,27 @@ if not gemini_api_key:
     print("⚠️ WARNING: GEMINI_API_KEY environment variable not set.")
 genai.configure(api_key=gemini_api_key)
 
-# ---------------- TOKEN REQUIRED (Moved Up) ----------------
+# ---------------- TOKEN REQUIRED (Updated) ----------------
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.headers.get('x-auth-token')
+        # Accept both Authorization: Bearer <token> and x-auth-token
+        auth_header = request.headers.get('Authorization')
+        token = None
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+        else:
+            token = request.headers.get('x-auth-token')
+
         if not token:
             return jsonify({'error': 'Token is missing!'}), 401
+
         try:
             data = jwt.decode(token, app.config['JWT_SECRET'], algorithms=["HS256"])
             current_user = User.objects.get(id=data['user_id'])
         except Exception as e:
             return jsonify({'error': 'Token is invalid or expired!', 'details': str(e)}), 401
+
         return f(current_user, *args, **kwargs)
     return decorated
 
@@ -109,31 +118,58 @@ def parse_iso(dt_str):
 @app.route('/api/planner/generate-plan', methods=['POST'])
 @token_required
 def generate_plan(current_user):
-    body = request.get_json() or {}
-    goals = body.get('goals', '').strip()
-    subjects = body.get('subjects', '').strip()
-    timeframe = body.get('timeframe', '').strip()
-
-    if not (goals or subjects or timeframe):
-        return jsonify({"error": "Provide at least one of goals/subjects/timeframe"}), 400
-
-    prompt = f"You are an expert study planner. Create a clear, actionable plan.\n\nGoals: {goals}\nSubjects: {subjects}\nTimeframe: {timeframe}"
-
+    """
+    Generate AI-based study plan using Gemini API or fallback template.
+    Includes safe JSON parsing and error handling.
+    """
     try:
+        # ✅ Robust body parsing
+        try:
+            body = request.get_json(force=True)
+            if isinstance(body, str):
+                body = json.loads(body)
+        except Exception:
+            body = {}
+
+        goals = (body.get('goals') or '').strip()
+        subjects = (body.get('subjects') or '').strip()
+        timeframe = (body.get('timeframe') or '').strip()
+
+        if not (goals or subjects or timeframe):
+            return jsonify({"error": "Provide at least one of goals/subjects/timeframe"}), 400
+
+        prompt = (
+            f"You are an expert study planner. Create a clear, actionable study plan.\n\n"
+            f"Goals: {goals}\nSubjects: {subjects}\nTimeframe: {timeframe}\n\n"
+            "Return the plan in markdown format with day-wise steps."
+        )
+
         plan_text = None
         try:
             model = genai.GenerativeModel('gemini-2.5')
             resp = model.generate_content(prompt)
-            plan_text = getattr(resp, 'text', None) or (resp.candidates[0].content.parts[0].text if hasattr(resp, 'candidates') else None)
-        except Exception:
+            plan_text = getattr(resp, 'text', None)
+            if not plan_text and hasattr(resp, 'candidates'):
+                plan_text = resp.candidates[0].content.parts[0].text
+        except Exception as inner_e:
+            print("⚠️ Gemini error:", inner_e)
             plan_text = None
 
         if not plan_text:
-            plan_text = f"### Study Plan (auto-created)\n\n**Focus:** {subjects or goals}\n\n- Day 1: Read core concepts\n- Day 2: Practice problems\n- Day 3: Revise and summarize"
+            plan_text = (
+                f"### Study Plan (auto-created)\n\n**Focus:** {subjects or goals}\n\n"
+                "- Day 1: Read core concepts\n"
+                "- Day 2: Practice problems\n"
+                "- Day 3: Revise and summarize\n\n"
+                "_This is an auto-generated fallback plan._"
+            )
 
         AIPlan(user_id=current_user, prompt=prompt, plan_text=plan_text).save()
-        return jsonify({"plan": plan_text})
+        print(f"✅ Plan generated for {current_user.email}: {goals or subjects}")
+        return jsonify({"plan": plan_text}), 200
+
     except Exception as e:
+        print("❌ generate_plan error:", e)
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/planner/tasks', methods=['POST'])
@@ -207,10 +243,42 @@ def get_upcoming_deadlines(current_user):
 def get_alerts(current_user):
     now = datetime.datetime.utcnow()
     in_one_hour = now + datetime.timedelta(hours=1)
-    expired = PlannerEvent.objects(user_id=current_user, deadline__lte=now)
-    soon = PlannerEvent.objects(user_id=current_user, deadline__gt=now, deadline__lte=in_one_hour)
-    alerts = [{"id": str(e.id), "type": "expired", "message": f"Deadline expired: {e.title}", "deadline": e.deadline.isoformat()} for e in expired]
-    alerts += [{"id": str(e.id), "type": "upcoming", "message": f"Upcoming soon: {e.title}", "deadline": e.deadline.isoformat()} for e in soon]
+
+    # existing deadline-based alerts
+    expired = PlannerEvent.objects(user_id=current_user, deadline__lte=now, description__ne="Reminder")
+    soon = PlannerEvent.objects(user_id=current_user, deadline__gt=now, deadline__lte=in_one_hour, description__ne="Reminder")
+
+    alerts = [
+        {
+            "id": str(e.id),
+            "type": "expired",
+            "message": f"Deadline expired: {e.title}",
+            "deadline": e.deadline.isoformat(),
+        }
+        for e in expired
+    ]
+    alerts += [
+        {
+            "id": str(e.id),
+            "type": "upcoming",
+            "message": f"Upcoming soon: {e.title}",
+            "deadline": e.deadline.isoformat(),
+        }
+        for e in soon
+    ]
+
+    # ✅ NEW: include user-added reminders directly as alerts
+    reminders = PlannerEvent.objects(user_id=current_user, description="Reminder")
+    alerts += [
+        {
+            "id": str(r.id),
+            "type": "reminder",
+            "message": f"Reminder: {r.title}",
+            "deadline": r.deadline.isoformat() if r.deadline else None,
+        }
+        for r in reminders
+    ]
+
     return jsonify({"alerts": alerts})
 
 # ---------------- BACKGROUND CHECKER ----------------

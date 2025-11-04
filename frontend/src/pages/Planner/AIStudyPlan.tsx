@@ -16,8 +16,13 @@ const AIStudyPlan: React.FC = () => {
     }
     setLoading(true);
     try {
-      const data = await generateAIPlan(goal, subjects, timeframe);
-      setPlan(data.plan_text);
+      const data = await generateAIPlan({
+        goals: goal,
+        subjects,
+        timeframe,
+      });
+
+      setPlan(data.plan);
     } catch (error) {
       console.error("Error generating plan:", error);
     }

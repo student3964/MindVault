@@ -15,6 +15,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use((config) => {
   const token = getAuthToken();
   if (token) {
+    // Use Authorization Bearer — backend supports both
     config.headers.Authorization = `Bearer ${token}`;
   }
   config.headers["Content-Type"] = "application/json";
@@ -24,8 +25,9 @@ axiosInstance.interceptors.request.use((config) => {
 // ------------------- TASKS -------------------
 export const fetchTasks = async () => {
   const res = await axiosInstance.get("/tasks");
-  return res.data;
+  return res.data.tasks || []; // ✅ always return an array
 };
+
 
 export const createTask = async (title: string) => {
   const res = await axiosInstance.post("/tasks", { title });
@@ -80,6 +82,10 @@ export const generateAIPlan = async (data: {
   subjects?: string;
   timeframe?: string;
 }) => {
+  // Always ensure an object is passed
+  if (!data || typeof data !== "object") {
+    throw new Error("generateAIPlan requires an object payload.");
+  }
   const res = await axiosInstance.post("/generate-plan", data);
   return res.data;
 };
