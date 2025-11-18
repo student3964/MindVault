@@ -13,7 +13,7 @@ import google.generativeai as genai
 import jwt
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, Response
-from flask_cors import CORS
+from flask_cors import CORS # type: ignore
 from flask_mongoengine import MongoEngine
 from pptx import Presentation  # python-pptx for PowerPoint
 
@@ -448,7 +448,6 @@ def generate_mcqs(current_user, file_id):
     except Exception as e:
         print("❌ generate_mcqs error:", e)
         return jsonify({"error": str(e)}), 500
-
 
 # ---------------- RUN APP ----------------
 if __name__ == '__main__':
