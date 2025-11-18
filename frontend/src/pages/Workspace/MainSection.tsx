@@ -14,6 +14,9 @@ import AlertsBox from '../../pages/Planner/AlertsBox';
 import CalendarBox from "../../pages/Planner/CalendarBox";
 import { createEvent, fetchEvents } from '../../api/planner';
 
+// Helper function to get the token (since MainSection needs it too)
+const getToken = () => localStorage.getItem('token'); 
+
 // ------------------ Context for Trash ------------------
 export interface MyFile {
   name: string;
@@ -50,7 +53,7 @@ export const TrashProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
-// ------------------ Context for Chat History ------------------
+// ------------------ Context for Chat History (Local) ------------------
 interface Message {
   id: number;
   sender: 'user' | 'bot';
@@ -204,29 +207,159 @@ const TrashView = () => {
   );
 };
 
-// ------------------ History View ------------------
-const HistoryView = () => {
-    // In a real application, you would fetch history data here:
-    // const { history } = useChatHistory(); // Use this when history is implemented
-    const hasHistory = false; // Mocking empty state
+// ------------------ History View (Updated to fetch DB history) ------------------
+interface ChatItem {
+    id: string;
+    title: string;
+    updated_at: string;
+}
+
+interface HistoryViewProps {
+    onChatSelect: (chatId: string) => void;
+}
+
+const HistoryView: React.FC<HistoryViewProps> = ({ onChatSelect }) => {
+    const [chats, setChats] = useState<ChatItem[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    // ⭐️ NEW STATE for delete confirmation
+    const [chatToDelete, setChatToDelete] = useState<ChatItem | null>(null); 
+
+    // Function to fetch the chat list
+    const fetchChats = async () => {
+        setIsLoading(true);
+        const token = getToken();
+        if (token) {
+            try {
+                const res = await fetch("http://127.0.0.1:5000/api/vaultai/chats", {
+                    headers: { "x-auth-token": token },
+                });
+                
+                if (!res.ok) throw new Error("Failed to fetch chat list.");
+
+                const data = await res.json();
+                setChats(data.chats || []);
+            } catch (error) {
+                console.error("Error fetching chat history:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        } else {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchChats();
+    }, []);
+
+    // ⭐️ NEW: Function to handle actual deletion
+    const handleConfirmDelete = async () => {
+        if (!chatToDelete) return;
+
+        const token = getToken();
+        if (!token) {
+            alert("Authentication required.");
+            return;
+        }
+
+        setIsLoading(true);
+        setChatToDelete(null); // Close confirmation modal immediately
+
+        try {
+            const res = await fetch(`http://127.0.0.1:5000/api/vaultai/${chatToDelete.id}`, {
+                method: 'DELETE',
+                headers: { "x-auth-token": token },
+            });
+
+            if (!res.ok) throw new Error("Failed to delete chat from database.");
+
+            // Refresh the list after successful deletion
+            await fetchChats();
+            alert("Chat deleted successfully!");
+            
+        } catch (error) {
+            console.error("Error deleting chat:", error);
+            alert(`Error deleting chat: ${error.message}`);
+            setIsLoading(false); // Restore loading state if fetchChats failed
+        }
+    };
+
+
+    const hasHistory = chats.length > 0;
+
+    if (isLoading) {
+        return <div className="p-8 h-full flex flex-col items-center justify-center text-white">Loading History...</div>;
+    }
 
     return (
         <div className="p-8 h-full flex flex-col text-center relative">
-            <button className="absolute top-4 right-4 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm shadow">
-                Clear History
-            </button>
-
+            
+            {/* ⭐️ IMPROVED: Confirmation Dialog Styling */}
+            {chatToDelete && (
+                <div className="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"> {/* Higher z-index */}
+                    <div className="bg-[#1e1e2d] border border-gray-700 p-8 rounded-xl shadow-2xl text-white max-w-md w-full mx-4"> {/* Enhanced background, border, shadow */}
+                        <div className="flex flex-col items-center mb-6">
+                            <span className="text-red-500 text-5xl mb-4 animate-bounce-once">⚠️</span> {/* Warning icon */}
+                            <h3 className="font-bold text-2xl mb-2">Confirm Deletion</h3>
+                            <p className="text-gray-300 text-base text-center">
+                                Are you sure you want to delete "<span className="font-semibold text-purple-300">{chatToDelete.title}</span>"? This action cannot be undone.
+                            </p>
+                        </div>
+                        <div className="flex justify-center space-x-4"> {/* Centered buttons with consistent spacing */}
+                            <button 
+                                onClick={() => setChatToDelete(null)} 
+                                className="px-6 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition duration-200 ease-in-out text-lg font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleConfirmDelete} 
+                                className="px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition duration-200 ease-in-out text-lg font-medium"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             {hasHistory ? (
                 <div className="w-full mt-8">
                     <h2 className="text-3xl font-bold text-white mb-4 text-center">Recent Chat Sessions</h2>
-                    {/* Placeholder for list of chat sessions (similar to trash list) */}
                     <div className="p-4 rounded-2xl bg-white/10 border border-white/20">
-                        <p className="text-gray-400">List of conversations will go here...</p>
+                        <ul className="text-gray-400 flex flex-col gap-2">
+                            {chats.map((chat) => (
+                                <li 
+                                    key={chat.id} 
+                                    className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-white/20 transition-colors border-b border-gray-700 last:border-b-0 group"
+                                >
+                                    {/* Clickable area for opening chat */}
+                                    <div 
+                                        onClick={() => onChatSelect(chat.id)}
+                                        className="flex-1 cursor-pointer text-left"
+                                    >
+                                        <span className="font-semibold text-white">{chat.title}</span>
+                                        <span className="text-xs text-gray-400 ml-3">
+                                            {new Date(chat.updated_at).toLocaleDateString()}
+                                        </span>
+                                    </div>
+
+                                    {/* ⭐️ NEW: Delete Button */}
+                                    <button
+                                        onClick={() => setChatToDelete(chat)}
+                                        className="text-gray-400 hover:text-red-500 opacity-70 group-hover:opacity-100 transition-opacity ml-2"
+                                        title="Delete Chat"
+                                    >
+                                        🗑️
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </div>
             ) : (
                 <div className="flex flex-col items-center justify-center flex-1 mt-18">
-                    <div className="text-8xl mb-4">💬</div> {/* Updated icon */}
+                    <div className="text-8xl mb-4">💬</div>
                     <h2 className="text-3xl font-bold text-white">No history yet</h2>
                     <p className="text-gray-400 mt-2">
                         Start a conversation with the AI Bot to see it here.
@@ -236,7 +369,6 @@ const HistoryView = () => {
         </div>
     );
 };
-
 
 // ------------------ PLANNER VIEW ------------------
 const PlannerView: React.FC = () => {
@@ -262,12 +394,7 @@ const PlannerView: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-8 lg:p-12 space-y-8">
-      <h1 className="text-4xl font-bold mb-4 text-white text-center">📅 Study Planner</h1>
-      <p className="text-center text-gray-300 text-sm italic">
-        “A goal without a plan is just a wish.”
-      </p>
-
+    <div className="p-4 lg:p-5 space-y-4">
       <AIStudyPlan setEvents={setEvents} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -287,9 +414,6 @@ const PlannerView: React.FC = () => {
   );
 };
 
-// ------------------ VaultAI ------------------
-const VaultAIView = VaultAI;
-
 // ------------------ Main Section ------------------
 interface MainSectionProps {
   currentView: string;
@@ -297,6 +421,20 @@ interface MainSectionProps {
 }
 
 const MainSection: React.FC<MainSectionProps> = ({ currentView, setCurrentView }) => {
+  // ⭐️ NEW STATE: To hold the ID of the chat currently being viewed/edited
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+
+  // Handle click on a chat session from the HistoryView
+  const handleChatSelect = (chatId: string) => {
+    setActiveChatId(chatId);
+    setCurrentView('vaultAI'); // Switch to the VaultAI view
+  };
+
+  // Handle when VaultAI creates a new chat (to update the activeChatId state)
+  const handleNewChatIdCreated = (newId: string) => {
+    setActiveChatId(newId);
+  }
+
   const renderContent = () => {
     switch (currentView) {
       case 'myVault':
@@ -305,16 +443,37 @@ const MainSection: React.FC<MainSectionProps> = ({ currentView, setCurrentView }
         return <TrashView />;
       case 'planner':
         return <PlannerView />;
+        
       case 'aiBot':
       case 'vaultAI':
-        return <VaultAIView />;
-      case 'history': // Added the case back for the new HistoryView
-        return <HistoryView />; 
+        return (
+          // ⭐️ PASS THE ACTIVE CHAT ID AND CALLBACK TO VAULTAI
+          <VaultAI 
+            initialChatId={activeChatId} 
+            onNewChatIdCreated={handleNewChatIdCreated} 
+          />
+        );
+        
+      case 'history': 
+        // ⭐️ PASS SELECT HANDLER TO HISTORY VIEW
+        return <HistoryView onChatSelect={handleChatSelect} />; 
+        
       case 'dashboard':
       default:
         return <DashboardView setCurrentView={setCurrentView} />;
     }
   };
+
+  // Clear activeChatId when switching to a non-chat view (like Dashboard or History)
+  useEffect(() => {
+    if (currentView !== 'vaultAI' && currentView !== 'aiBot') {
+        setActiveChatId(null);
+    }
+    // Clicking 'aiBot' should also start a fresh chat by resetting activeChatId
+    if (currentView === 'aiBot' && activeChatId !== null) {
+        setActiveChatId(null);
+    }
+  }, [currentView]);
 
   return (
     <ChatHistoryProvider>

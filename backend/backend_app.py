@@ -113,6 +113,15 @@ class AIPlan(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     meta = {'collection': 'ai_plans'}
 
+class VaultChat(db.Document):
+    user_id = db.ReferenceField(User, required=True)
+    title = db.StringField(required=True, default="New Chat")
+    messages = db.ListField(db.DictField())  # [{role: "user/ai", message: "..."}]
+    created_at = db.DateTimeField(default=datetime.datetime.utcnow)
+    updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
+    meta = {'collection': 'vault_chats'}
+
+
 # ---------------- HELPERS ----------------
 def parse_iso(dt_str):
     try:
@@ -304,6 +313,12 @@ def planner_background_checker(interval=30):
 
 planner_background_checker(30)
 
+# -------------- auto chat title --------------
+def auto_chat_title():
+    now = datetime.datetime.now()
+    return f"Chat - {now.strftime('%d %b, %I:%M %p')}"
+
+
 # ---------------- AUTH ENDPOINTS ----------------
 @app.route('/api/auth/register', methods=['POST'])
 def register_user():
@@ -338,6 +353,129 @@ def delete_task(current_user, task_id):
         return jsonify({"error": "Not found"}), 404
     task.delete()
     return jsonify({"message": "Task deleted successfully"}), 200
+
+@app.route('/api/vaultai/new', methods=['POST'])
+@token_required
+def create_vault_chat(current_user):
+    chat = VaultChat(
+        user_id=current_user,
+        title=auto_chat_title(),
+        messages=[]
+    ).save()
+
+    return jsonify({"chatId": str(chat.id), "title": chat.title})
+
+@app.route('/api/vaultai/<chat_id>', methods=['POST'])
+@token_required
+def vault_ai_chat(current_user, chat_id):
+    data = request.get_json()
+    prompt = data.get("prompt", "")
+    chat = VaultChat.objects(id=chat_id, user_id=current_user).first()
+    
+    if not chat:
+        return jsonify({"error": "Chat not found"}), 404
+    
+    # Check if this is the very first message in a newly created chat
+    is_first_message = not chat.messages
+    
+    chat.messages.append({"role": "user", "message": prompt})
+    
+    try:
+        # Use a model that is efficient for chat
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        
+        # Use the history for context in subsequent calls (optional, but good practice)
+        contents = [
+            {"role": "user" if m['role'] == 'user' else "model", "parts": [{"text": m['message']}]}
+            for m in chat.messages
+        ]
+        
+        # We only pass the new prompt and previous history for generation
+        response = model.generate_content(contents)
+        reply = response.text
+        
+    except Exception as e:
+        print("Gemini chat error:", e)
+        reply = f"Gemini error: {str(e)}"
+
+    chat.messages.append({"role": "ai", "message": reply})
+    
+    # ⭐️ CORE IMPROVEMENT: Automate the title after the first message
+    if is_first_message:
+        try:
+            # Send the prompt to the AI specifically for title generation
+            title_prompt = f"Create a short, descriptive title (5 words max) for this user query: '{prompt}'"
+            title_response = genai.GenerativeModel("gemini-2.5-flash").generate_content(title_prompt)
+            new_title = title_response.text.strip().replace('"', '').replace("'", '')
+            
+            # Use the AI-generated title, but fallback to the first line of the user's prompt
+            if new_title and len(new_title) < 50:
+                 chat.title = new_title
+            else:
+                 chat.title = prompt.split('\n')[0][:50] + '...'
+
+        except Exception as e:
+            # Fallback if title generation fails
+            print("Title generation failed:", e)
+            chat.title = prompt.split('\n')[0][:50] + '...'
+
+    chat.updated_at = datetime.datetime.utcnow()
+    chat.save()
+    
+    # Return the new title so the frontend can update the history sidebar immediately
+    return jsonify({"response": reply, "newTitle": chat.title})
+
+@app.route('/api/vaultai/rename/<chat_id>', methods=['PATCH'])
+@token_required
+def rename_chat(current_user, chat_id):
+    data = request.get_json()
+    new_title = data.get("title", "").strip()
+
+    chat = VaultChat.objects(id=chat_id, user_id=current_user).first()
+    if not chat:
+        return jsonify({"error": "Chat not found"}), 404
+
+    chat.title = new_title
+    chat.save()
+
+    return jsonify({"success": True})
+
+@app.route('/api/vaultai/chats', methods=['GET'])
+@token_required
+def list_chats(current_user):
+    chats = VaultChat.objects(user_id=current_user).order_by('-updated_at')
+    out = [
+        {"id": str(c.id), "title": c.title, "updated_at": c.updated_at.isoformat()}
+        for c in chats
+    ]
+    return jsonify({"chats": out})
+
+@app.route('/api/vaultai/chat/<chat_id>', methods=['GET'])
+@token_required
+def get_chat(current_user, chat_id):
+    chat = VaultChat.objects(id=chat_id, user_id=current_user).first()
+    if not chat:
+        return jsonify({"error": "Chat not found"}), 404
+
+    return jsonify({
+        "id": str(chat.id),
+        "title": chat.title,
+        "messages": chat.messages
+    })
+
+@app.route('/api/vaultai/<chat_id>', methods=['DELETE'])
+@token_required
+def delete_chat(current_user, chat_id):
+    try:
+        chat = VaultChat.objects(id=chat_id, user_id=current_user).first()
+        if not chat:
+            return jsonify({"error": "Chat not found"}), 404
+        chat.delete()
+        print(f"✅ VaultChat deleted: {chat_id} for user {current_user.email}")
+        return jsonify({"success": True, "message": "Chat deleted successfully"}), 200
+    except Exception as e:
+        print(f"❌ delete_chat error for {chat_id}:", e)
+        return jsonify({"error": str(e)}), 500
 
 # ---------------- FILE UPLOAD & AI ROUTES ----------------
 @app.route('/api/upload', methods=['POST'])

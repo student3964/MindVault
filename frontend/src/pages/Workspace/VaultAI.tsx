@@ -1,70 +1,179 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { marked } from 'marked';
-import { useChatHistory } from './MainSection';
-import './Workspace.css'; // Import the main workspace styles
+import { useChatHistory } from './MainSection'; 
+import './Workspace.css'; 
 
+// Define the message interface
 interface Message {
     id: number;
     sender: 'user' | 'bot';
     content: string;
 }
 
-const VaultAI: React.FC = () => {
-    // The initial messages are now separated into two distinct messages
-    const [messages, setMessages] = useState<Message[]>([
+// Props for the VaultAI component
+interface VaultAIProps {
+    initialChatId: string | null; // ID of the chat to load
+    onNewChatIdCreated: (id: string) => void; // Callback when a new chat is successfully created
+}
+
+// Helper function to get the token (Adjust this based on your actual auth mechanism)
+const getToken = () => localStorage.getItem('token'); 
+
+const VaultAI: React.FC<VaultAIProps> = ({ initialChatId, onNewChatIdCreated }) => {
+    // Default welcome messages
+    const initialWelcomeMessages: Message[] = [
         { id: 1, sender: 'bot', content: "Hi there! I'm your AI helper. What would you like to do today?"},
         { id: 2, sender: 'bot', content: "**For example:**\n- `Summarize my DBMS notes (dbms.pdf)`\n- `Create MCQs from history-lecture.pdf`" },
-    ]);
+    ];
+    
+    const [messages, setMessages] = useState<Message[]>(initialWelcomeMessages);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    
+    // We should use the prop directly for the chatId when loading, or null when starting fresh.
+    const [currentChatIdState, setCurrentChatIdState] = useState<string | null>(initialChatId); 
+    
     const chatEndRef = useRef<HTMLDivElement>(null);
-    const { addSession } = useChatHistory();
+    const { addSession } = useChatHistory(); 
 
+    // Scroll to the latest message whenever messages update
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    // Cleanup: save the local session history when the component unmounts (optional, as DB save is primary)
     useEffect(() => {
-        return () => { if (messages.length > 1) addSession({ id: Date.now(), messages }); };
+        return () => { 
+            if (messages.length > initialWelcomeMessages.length) addSession({ id: Date.now(), messages }); 
+        };
     }, [messages, addSession]);
+    
+    // ⭐️ FIX: Effect to load history based on initialChatId prop
+    useEffect(() => {
+        const token = getToken();
+        
+        // 1. If a chat ID is passed and it's valid, load it.
+        if (initialChatId && token) {
+            
+            // If the chat ID passed is different from the one currently loaded, reset and load
+            if (initialChatId !== currentChatIdState) {
+                setCurrentChatIdState(initialChatId);
+                setIsLoading(true);
+
+                const loadChat = async () => {
+                    try {
+                        const res = await fetch(`http://127.0.0.1:5000/api/vaultai/chat/${initialChatId}`, {
+                            headers: { "x-auth-token": token },
+                        });
+                        
+                        if (!res.ok) throw new Error("Failed to load chat history.");
+                        
+                        const data = await res.json();
+                        
+                        const loadedMessages: Message[] = data.messages.map((msg: any, index: number) => ({
+                            id: index + 3,
+                            sender: msg.role === 'user' ? 'user' : 'bot',
+                            content: msg.message,
+                        }));
+                        
+                        setMessages(loadedMessages);
+                    } catch (error) {
+                        console.error("History loading error:", error);
+                        setMessages([
+                            { id: 1, sender: 'bot', content: "Error loading conversation. Please start a new chat."}
+                        ]);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                };
+                loadChat();
+            }
+        } 
+        // 2. If the prop is null, reset the component to the "new chat" state
+        else if (!initialChatId && currentChatIdState !== null) {
+             setCurrentChatIdState(null);
+             setMessages(initialWelcomeMessages);
+        }
+    }, [initialChatId]); // Only run when the initialChatId prop changes
+
 
     const handleSendMessage = async () => {
-    const command = inputValue.trim();
-    if (!command || isLoading) return;
+        const command = inputValue.trim();
+        const token = getToken(); 
 
-    setMessages(prev => [
-        ...prev,
-        { id: Date.now(), sender: 'user', content: command }
-    ]);
-    setInputValue('');
-    setIsLoading(true);
+        if (!command || isLoading || !token) {
+            if (!token) {
+                 console.error("Authentication required. Please log in.");
+            }
+            return; 
+        }
 
-    try {
-        // 🔥 SEND MESSAGE TO YOUR BACKEND AI ENDPOINT
-        const res = await fetch("http://127.0.0.1:5000/api/vaultai", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: command })
-        });
-
-        const data = await res.json();
-
-        // If backend sent an AI response
-        let botText = data.response || "Sorry, backend gave no response.";
-
+        // 1. Add User Message
         setMessages(prev => [
             ...prev,
-            { id: Date.now() + 1, sender: "bot", content: botText }
+            { id: Date.now(), sender: 'user', content: command }
         ]);
-    } catch (error) {
-        setMessages(prev => [
-            ...prev,
-            { id: Date.now() + 1, sender: "bot", content: "Error reaching AI backend." }
-        ]);
-    }
+        setInputValue('');
+        setIsLoading(true);
 
-    setIsLoading(false);
-};
+        try {
+            let currentChatId = currentChatIdState;
+            
+            // 2. If no chatId exists, create a new chat session first
+            if (!currentChatId) {
+                const newChatRes = await fetch("http://127.0.0.1:5000/api/vaultai/new", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "x-auth-token": token 
+                    },
+                });
+                
+                const newChatData = await newChatRes.json();
+                if (!newChatRes.ok) {
+                    throw new Error(newChatData.error || "Failed to start a new chat session.");
+                }
+                
+                currentChatId = newChatData.chatId;
+                setCurrentChatIdState(currentChatId); 
+                
+                // Notify parent component that a new chat ID was created
+                onNewChatIdCreated(currentChatId);
+            }
+
+            // 3. Send the message to the specific chat ID endpoint
+            const res = await fetch(`http://127.0.0.1:5000/api/vaultai/${currentChatId}`, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "x-auth-token": token 
+                },
+                body: JSON.stringify({ prompt: command })
+            });
+
+            const data = await res.json();
+            
+            if (!res.ok) {
+                 throw new Error(data.error || "AI response failed.");
+            }
+
+            // 4. Add Bot Response
+            let botText = data.response || "Sorry, backend gave no response.";
+            setMessages(prev => [
+                ...prev,
+                { id: Date.now() + 1, sender: "bot", content: botText }
+            ]);
+
+        } catch (error) {
+            console.error("AI Communication Error:", error);
+            setMessages(prev => [
+                ...prev,
+                { id: Date.now() + 1, sender: "bot", content: `Error reaching MindVault: ${(error as Error).message}` }
+            ]);
+        }
+
+        setIsLoading(false);
+    };
 
 
     const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -83,18 +192,44 @@ const VaultAI: React.FC = () => {
             <div className="flex-1 p-4 rounded-2xl bg-white/10 border border-white/20 overflow-y-auto custom-scrollbar flex flex-col gap-4 mx-auto w-full max-w-[80%] max-h-[70%]">
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-                        {/* Apply different styles based on the message ID to target the example message */}
-                        <div className={`break-words max-w-[70%] px-4 py-2 rounded-xl text-white ${msg.sender === "user" ? "bg-purple-600 rounded-tr-none" : "bg-gray-700 rounded-xl"} ${msg.id === 2 ? 'text-sm max-w-[60%]' : ''}`} dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) }}></div>
+                        {/* Render markdown content */}
+                        <div 
+                            className={`break-words max-w-[70%] px-4 py-2 rounded-xl text-white ${msg.sender === "user" ? "bg-purple-600 rounded-tr-none" : "bg-gray-700 rounded-xl"} ${msg.id === 2 ? 'text-sm max-w-[60%]' : ''}`} 
+                            dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) }}
+                        />
                     </div>
                 ))}
-                {isLoading && (<div className="flex justify-start"><div className="bg-gray-700 px-4 py-2 rounded-xl flex gap-1">{[0, 150, 300].map((delay, index) => (<span key={index} className="bg-white w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: `${delay}ms` }}></span>))}</div></div>)}
+                {/* Loading indicator */}
+                {isLoading && (
+                    <div className="flex justify-start">
+                        <div className="bg-gray-700 px-4 py-2 rounded-xl flex gap-1">
+                            {[0, 150, 300].map((delay, index) => (
+                                <span key={index} className="bg-white w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: `${delay}ms` }}></span>
+                            ))}
+                        </div>
+                    </div>
+                )}
                 <div ref={chatEndRef} />
             </div>
             {/* End of adjusted styles */}
 
             <div className="mt-4 flex items-center gap-2 mx-auto w-full max-w-[80%]">
-                <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={handleKeyPress} placeholder="e.g., Summarize my DBMS notes (dbms.pdf)" className="flex-grow bg-slate-800/80 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-500" disabled={isLoading}/>
-                <button onClick={handleSendMessage} className="primary-btn h-[52px] w-[52px] flex items-center justify-center rounded-lg text-base font-semibold" disabled={isLoading}>➤</button>
+                <input 
+                    type="text" 
+                    value={inputValue} 
+                    onChange={(e) => setInputValue(e.target.value)} 
+                    onKeyDown={handleKeyPress} 
+                    placeholder="e.g., Summarize my DBMS notes (dbms.pdf)" 
+                    className="flex-grow bg-slate-800/80 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-500" 
+                    disabled={isLoading}
+                />
+                <button 
+                    onClick={handleSendMessage} 
+                    className="primary-btn h-[52px] w-[52px] flex items-center justify-center rounded-lg text-base font-semibold" 
+                    disabled={isLoading}
+                >
+                    ➤
+                </button>
             </div>
         </div>
     );
