@@ -409,7 +409,7 @@ def summarize_file(current_user, file_id):
 def generate_mcqs(current_user, file_id):
     """Generates MCQs from the uploaded file using Gemini"""
     try:
-        # Find the file in temp_uploads
+        # Locate file
         target_file = None
         for f in os.listdir(TEMP_UPLOAD_FOLDER):
             if f.startswith(file_id):
@@ -433,21 +433,64 @@ def generate_mcqs(current_user, file_id):
             with open(target_file, "r", encoding="utf-8") as f:
                 text_content = f.read()
 
+        # Gemini prompt
         model = genai.GenerativeModel("gemini-2.0-flash")
-        prompt = f"Generate 5 MCQs from this content with options and correct answers in JSON format:\n{text_content[:5000]}"
-        response = model.generate_content(prompt)
+        prompt = f"""
+        Generate 10 MCQs from the following text.
+        Return ONLY a valid JSON array in this exact format:
 
-        mcqs_json = []
+        [
+          {{
+            "question": "...",
+            "options": ["A", "B", "C", "D"],
+            "answer": "B"
+          }}
+        ]
+
+        Text:
+        {text_content[:5000]}
+        """
+
+        response = model.generate_content(prompt)
+        raw = response.text.strip()
+
+        # --- STRONG JSON CLEANER ---
+        cleaned = raw.strip().replace("```json", "").replace("```", "")
+
+        # Try parsing
         try:
-            mcqs_json = json.loads(response.text)
-        except Exception:
-            mcqs_json = []  # fallback if not parseable
+            mcqs_json = json.loads(cleaned)
+        except:
+            # Try extracting JSON manually
+            start = cleaned.find("[")
+            end = cleaned.rfind("]") + 1
+            try:
+                mcqs_json = json.loads(cleaned[start:end])
+            except:
+                mcqs_json = []
 
         return jsonify({"mcqs": mcqs_json}), 200
 
     except Exception as e:
         print("❌ generate_mcqs error:", e)
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/vaultai', methods=['POST'])
+def vault_ai():
+    data = request.get_json()
+    prompt = data.get("prompt", "")
+
+    if not prompt:
+        return jsonify({"response": "Empty prompt received."})
+
+    try:
+        response = genai.GenerativeModel("gemini-2.5-flash").generate_content(prompt)
+        reply = response.text
+    except Exception as e:
+        reply = f"Gemini error: {str(e)}"
+
+    return jsonify({"response": reply})
+
 
 # ---------------- RUN APP ----------------
 if __name__ == '__main__':

@@ -29,24 +29,43 @@ const VaultAI: React.FC = () => {
     }, [messages, addSession]);
 
     const handleSendMessage = async () => {
-        const command = inputValue.trim();
-        if (!command || isLoading) return;
+    const command = inputValue.trim();
+    if (!command || isLoading) return;
 
-        setMessages(prev => [...prev, { id: Date.now(), sender: 'user', content: command }]);
-        setInputValue('');
-        setIsLoading(true);
+    setMessages(prev => [
+        ...prev,
+        { id: Date.now(), sender: 'user', content: command }
+    ]);
+    setInputValue('');
+    setIsLoading(true);
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+        // 🔥 SEND MESSAGE TO YOUR BACKEND AI ENDPOINT
+        const res = await fetch("http://127.0.0.1:5000/api/vaultai", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: command })
+        });
 
-        let botResponseContent: string;
-        if (command.toLowerCase().includes('summarize')) {
-            botResponseContent = 'Okay, summarizing **dbms.pdf** for you...';
-        } else {
-            botResponseContent = "Sorry, I can't do that yet.";
-        }
-        setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'bot', content: botResponseContent }]);
-        setIsLoading(false);
-    };
+        const data = await res.json();
+
+        // If backend sent an AI response
+        let botText = data.response || "Sorry, backend gave no response.";
+
+        setMessages(prev => [
+            ...prev,
+            { id: Date.now() + 1, sender: "bot", content: botText }
+        ]);
+    } catch (error) {
+        setMessages(prev => [
+            ...prev,
+            { id: Date.now() + 1, sender: "bot", content: "Error reaching AI backend." }
+        ]);
+    }
+
+    setIsLoading(false);
+};
+
 
     const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter' && !event.shiftKey) {

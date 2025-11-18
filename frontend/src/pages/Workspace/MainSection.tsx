@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import VaultAI from './VaultAI';
 import MyVaultView from './MyVaultView';
 import { marked } from 'marked';
+import axios from 'axios'; // Required for PlannerView API calls
 
 // ✅ Planner imports
 import AIStudyPlan from '../../pages/Planner/AIStudyPlan';
@@ -203,6 +204,40 @@ const TrashView = () => {
   );
 };
 
+// ------------------ History View ------------------
+const HistoryView = () => {
+    // In a real application, you would fetch history data here:
+    // const { history } = useChatHistory(); // Use this when history is implemented
+    const hasHistory = false; // Mocking empty state
+
+    return (
+        <div className="p-8 h-full flex flex-col text-center relative">
+            <button className="absolute top-4 right-4 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm shadow">
+                Clear History
+            </button>
+
+            {hasHistory ? (
+                <div className="w-full mt-8">
+                    <h2 className="text-3xl font-bold text-white mb-4 text-center">Recent Chat Sessions</h2>
+                    {/* Placeholder for list of chat sessions (similar to trash list) */}
+                    <div className="p-4 rounded-2xl bg-white/10 border border-white/20">
+                        <p className="text-gray-400">List of conversations will go here...</p>
+                    </div>
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center flex-1 mt-18">
+                    <div className="text-8xl mb-4">💬</div> {/* Updated icon */}
+                    <h2 className="text-3xl font-bold text-white">No history yet</h2>
+                    <p className="text-gray-400 mt-2">
+                        Start a conversation with the AI Bot to see it here.
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+};
+
+
 // ------------------ PLANNER VIEW ------------------
 const PlannerView: React.FC = () => {
   const [refreshTasks, setRefreshTasks] = useState(0);
@@ -216,7 +251,8 @@ const PlannerView: React.FC = () => {
         const now = new Date();
         const fr = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
         const to = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
-        const res = await fetchEvents(fr, to);
+        // NOTE: fetchEvents requires axios to be available, which is now imported at the top.
+        const res = await fetchEvents(fr, to); 
         setEvents(res.events || []);
       } catch (e) {
         console.error(e);
@@ -227,14 +263,16 @@ const PlannerView: React.FC = () => {
 
   return (
     <div className="p-8 lg:p-12 space-y-8">
+      <h1 className="text-4xl font-bold mb-4 text-white text-center">📅 Study Planner</h1>
       <p className="text-center text-gray-300 text-sm italic">
         “A goal without a plan is just a wish.”
       </p>
 
-      <AIStudyPlan />
+      <AIStudyPlan setEvents={setEvents} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <CalendarBox
+          events={events}
           onTasksUpdate={() => setRefreshTasks((prev) => prev + 1)}
           onAlertsUpdate={() => setRefreshAlerts((prev) => prev + 1)}
           onDeadlinesUpdate={() => setRefreshDeadlines((prev) => prev + 1)}
@@ -270,6 +308,8 @@ const MainSection: React.FC<MainSectionProps> = ({ currentView, setCurrentView }
       case 'aiBot':
       case 'vaultAI':
         return <VaultAIView />;
+      case 'history': // Added the case back for the new HistoryView
+        return <HistoryView />; 
       case 'dashboard':
       default:
         return <DashboardView setCurrentView={setCurrentView} />;
