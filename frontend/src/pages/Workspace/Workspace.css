@@ -314,3 +314,6 @@ footer {
 /* The provided CSS doesn't contain specific MindVault styling in this section.
    The Sidebar.tsx was updated for the "Library" title, which is the closest element. */
 
+.chat-message p {
+  margin-bottom: 12px;
+}
