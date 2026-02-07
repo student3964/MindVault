@@ -1,52 +1,255 @@
 # MindVault
 
-**Unlock smarter learning with AI-powered summarization, note generation, and concept mapping.**
+Upload. Understand. Interact. Evolve.
 
 ## 📌 About the Project
 
-MindVault is a centralized, AI-powered workspace designed to help students manage and understand large volumes of educational resources efficiently.  
-Traditional study tools are often fragmented and lack seamless AI integration, leading to cognitive overload and reduced productivity.
+MindVault is an AI-powered study assistance and productivity platform designed to help students transform raw academic material into structured, actionable knowledge.
 
-This platform transforms **passive content into active learning tools** by providing a unified space for note-taking, Q&A, and summarization.  
-It leverages advanced AI models to provide **personalized answers from a student's own materials** and transforms static content into **dynamic visual representations like mind maps**.
+It combines AI summarization, MCQ generation, smart contextual chat, and productivity planning into one centralized workspace.
 
 ---
 
-## 🚀 Key Features
+## 🚀 Project Overview
 
-- **📄 Upload & Unlock Insights** — Upload PDFs, PPTs, or images to get instant summaries and visual mind maps powered by AI.
-- **🎯 Personalized Quizzes & Flashcards** — Instantly turn notes into quizzes and flashcards for smarter practice.
-- **💬 Interactive Q&A Chatbot** — Ask questions and get clear, contextual answers from your own uploaded content.
-- **🗂 Organize, Save & Access Anywhere** — Keep all your processed notes, summaries, and quizzes in one secure personal knowledge vault.
+In today’s fast-paced academic environment, students deal with:
 
----
+- Large PDFs and lecture slides
+- Time-consuming manual summarization
+- Lack of structured revision tools
+- Poor task and deadline management
 
-## 🔮 Upcoming Features
+MindVault solves these challenges by:
 
-- 🎙 Voice note transcription  
-- 📜 Chat history  
-- 👥 Collaborative study tools  
-- 📅 AI-powered calendar planning  
+- Automating content processing using AI
+- Generating summaries and MCQs instantly
+- Providing smart file-based contextual chat
+- Offering an integrated study planner with alerts
 
----
-
-## 🛠 Tech Stack
-
-| Layer         | Technology |
-|--------------|------------|
-| **Frontend** | React.js + Tailwind CSS |
-| **Backend**  | Node.js + Express |
-| **Database** | MongoDB |
-| **AI/LLM**   | LangChain + OpenAI API (RAG pipelines) |
-| **Auth**     | JWT (JSON Web Tokens) |
+It acts as a personalized AI study companion.
 
 ---
 
-## 📂 Project Structure
+## 🏗️ System Architecture
 
-```plaintext
-MindVault-fed/
-│── frontend/      # React + Tailwind frontend
-│── backend/       # Express backend APIs
-│── README.md
-│── package.json
+MindVault follows a three-tier architecture:
+
+## 🖥️ Presentation Layer (Frontend)
+
+- React.js + TypeScript
+- Tailwind CSS
+- Responsive and modular UI
+
+Handles:
+
+- File uploads
+- Vault management
+- Smart chat
+- Planner dashboard
+- Summary & MCQ display
+
+---
+
+## ⚙️ Application Layer (Backend)
+
+Two backend services:
+
+## 🐍 Flask (Python)
+
+- File processing (PDF, PPT, TXT)
+- AI summarization
+- MCQ generation
+- Smart chat
+- Gemini API integration
+
+## 🟢 Node.js + Express
+
+- Authentication (JWT)
+- Planner APIs
+- Alerts system
+- API routing
+
+---
+
+## 🗄️ Data Layer
+
+- MongoDB
+- Users
+- Files metadata
+- File chat history
+- Planner tasks & events
+- Alerts
+- AI study plans
+
+- Server Storage
+- Uploaded files stored in myvault_files/
+
+---
+
+## ✨ Core Features
+
+## 📂 1. File Uploads
+
+- Supports PDFs, PPTs, TXT files
+- Files stored securely
+- Preview support inside vault
+
+---
+
+## 📝 2. AI Summarization
+
+- Generates concise summaries using Gemini API
+- Speeds up revision process
+- Reduces cognitive overload
+
+---
+
+## ❓ 3. MCQ Generation
+
+- Auto-generates multiple-choice questions
+- Improves active recall
+- Helps exam preparation
+
+---
+
+## 💬 4. Smart File-Based Chat
+
+- Dedicated chat per file
+- Context-aware responses
+- Chat history stored in MongoDB
+- Acts like a personalized AI tutor
+
+---
+
+## 🗂️ 5. MyVault Workspace
+
+- Organized file repository
+- Metadata view (size, type, upload date)
+- Delete & manage files
+- Centralized study hub
+
+---
+
+## 📅 6. AI Study Planner
+
+- Generate AI-powered study plans
+- Stored for future reference
+- Structured preparation strategies
+
+---
+
+## ✅ 7. Tasks, Events & Alerts
+
+Users can:
+
+- Create tasks
+- Create events with deadlines
+- Mark tasks complete
+- Receive automatic alerts
+
+Background job:
+
+- Runs every 30 seconds
+- Checks expired & upcoming deadlines
+- Generates real-time alerts
+
+---
+
+## 🔐 Authentication & Security
+
+- JWT-based authentication
+- Secure protected routes
+- Role-based access
+- User-specific data isolation
+- Expired tokens automatically rejected
+
+---
+
+## 🛠️ Tech Stack
+
+## 🎨 Frontend
+
+- React.js
+- TypeScript
+- Tailwind CSS
+
+## ⚙️ Backend
+
+- Flask (Python)
+- Node.js
+- Express.js
+
+## 🗄️ Database
+
+- MongoDB
+
+## 🤖 AI Integration
+
+- Google Gemini API
+
+---
+
+## 🛠️ How to Run the Project
+
+## ✅ Prerequisites
+
+- Node.js (v18+)
+- Python 3.9+
+- MongoDB
+- Gemini API Key
+
+---
+
+## 🔹 Backend Setup
+
+cd backend
+
+python -m venv .venv
+
+.venv\\Scripts\\activate
+
+pip install -r requirements.txt
+
+python backend_app.py
+
+---
+
+## 🔹 Node Server Setup
+
+cd server
+
+npm install
+
+npm start
+
+---
+
+## 🔹 Frontend Setup
+
+cd frontend
+
+npm install
+
+npm run dev
+
+---
+
+## 📊 Database Collections
+
+- users
+- files
+- file_chats
+- planner_tasks
+- planner_events
+- planner_alerts
+- ai_plans
+
+---
+
+## 🔮 Future Enhancements
+
+- Semantic search (vector-based)
+- Mind map generation
+- Voice note transcription
+- Collaborative vaults
+- Advanced AI memory handling
