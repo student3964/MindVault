@@ -39,8 +39,8 @@ app.config['MONGODB_SETTINGS'] = {
 app.config['JWT_SECRET'] = os.getenv('JWT_SECRET') or 'secret-dev'
 db = MongoEngine(app)
 
-# ---------------- STORAGE FOLDER ----------------
-MY_VAULT_FOLDER = 'myvault_files'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MY_VAULT_FOLDER = os.path.join(BASE_DIR, "myvault_files")
 os.makedirs(MY_VAULT_FOLDER, exist_ok=True)
 
 gemini_api_key = os.getenv("GEMINI_API_KEY")

@@ -49,3 +49,5 @@ __pycache__/
 # Optional: ignore frontend build outputs if generated
 frontend/dist/
 
+# User uploaded/generated files
+backend/myvault_files/
